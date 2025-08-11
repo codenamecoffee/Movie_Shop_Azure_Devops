@@ -1,20 +1,55 @@
-# Introduction 
-TODO: Give a short introduction of your project. Let this section explain the objectives or the motivation behind this project. 
+# School Of Software Engineering : FastAPI Development
 
-# Getting Started
-TODO: Guide users through getting your code up and running on their own system. In this section you can talk about:
-1.	Installation process
-2.	Software dependencies
-3.	Latest releases
-4.	API references
+## Estructura del proyecto
 
-# Build and Test
-TODO: Describe and show how to build your code and run the tests. 
+Este proyecto fue creado usando UV. Se compone de los siguientes directorios:
 
-# Contribute
-TODO: Explain how other users and developers can contribute to make your code better. 
+```bash
+database_manager
+|_ local_file_storage.py
+schemas
+|_ schemas.py
+constants.py
+main_base.py
+pyproject.toml
+README.md
+```
 
-If you want to learn more about creating good readme files then refer the following [guidelines](https://docs.microsoft.com/en-us/azure/devops/repos/git/create-a-readme?view=azure-devops). You can also seek inspiration from the below readme files:
-- [ASP.NET Core](https://github.com/aspnet/Home)
-- [Visual Studio Code](https://github.com/Microsoft/vscode)
-- [Chakra Core](https://github.com/Microsoft/ChakraCore)
+Dentro de `database_manager` se encuentra el código necesario para gestionar el uso de nuestra base de datos en un archivo JSON. Dicho archivo tendrá el nombre de la variable `STATE_FILE` en el archivo de constantes `constants.py`.
+Dentro del directorio `schemas` se tendrá el archivo `schemas.py` en el cual se definirá todos los esquemas necesarios para desarrollar la API Rest.
+Por último, el código con las rutas de la API se encuentra en `main_base.py`.
+
+## Creación del ambiente virtual
+
+### Utilizando UV
+
+Como hemos venido trabajando durante el curso vamos a utilizar UV para la creación del ambiente virtual. Para esto procedemos a ejecutar los siguientes pasos:
+
+Inicialización del environment
+
+```bash
+uv sync
+```
+## Uso del servicio
+
+Una vez instaladas las dependencias, se inicial el servicio utilizando el siguiente comando:
+
+```bash
+# Linux
+uv run fastapi dev src/main.py
+
+# Windows
+uv run fastapi dev .\src\main.py
+```
+
+Una vez inicializado el servicio se puede utilizar el mismo a traves de la siguiente url en el navegador: [http://127.0.0.1:8000/](http://127.0.0.1:8000/) o ingresar a la documentación de Swagger del mismo mediante [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs).
+
+## Bonus track
+
+### Generar archivo requirements.txt con UV
+
+Se puede ejecutar el siguiente comando para generar un archivo de `requirements.txt` utilizando UV:
+
+```bash
+uv pip freeze > requirements.txt
+```
