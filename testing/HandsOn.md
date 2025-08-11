@@ -1,4 +1,4 @@
-# 🧪 Hands-On: Automatización de Testing para APIs en Python
+# 🧪 Hands-On: Automatización de Testing para APIs
 
 ## 🎯 Objetivo
 
