@@ -1,5 +1,9 @@
 # 🧪 School Of Software Engineering : FastAPI Development
 
+## 👩‍💻👨‍💻🤝 Equipo
+
+Mariana Guerra (marianaguerra965) and Federico González (fglmr95)
+
 ## 🎯 Objetivo
 
 El propósito de esta práctica es que pasen por la experiencia de programar una API Rest utilizando FastAPI con Python. Nos basaremos solamente en el desarrollo de las rutas y los schemas definidos y comentados en clase.
