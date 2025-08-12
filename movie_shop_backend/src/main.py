@@ -5,14 +5,14 @@ from fastapi.concurrency import asynccontextmanager
 
 from src.constants import STATE_FILE
 from src.database_manager.local_file_storage import load_state, save_state
-from src.routes.api_routes import router, movies, shops, _next_movie_id, _next_shop_id
+
+from src.routes import api_routes
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global movies, shops, _next_movie_id, _next_shop_id 
-    movies, shops, _next_movie_id, _next_shop_id = load_state(STATE_FILE)
+    api_routes.movies, api_routes.shops, api_routes._next_movie_id, api_routes._next_shop_id = load_state(STATE_FILE)
     yield
-    save_state(STATE_FILE, movies, shops, _next_movie_id, _next_shop_id)
+    save_state(STATE_FILE, api_routes.movies, api_routes.shops, api_routes._next_movie_id, api_routes._next_shop_id)
     
 app = FastAPI(lifespan=lifespan)
 
@@ -20,7 +20,7 @@ app = FastAPI(lifespan=lifespan)
 async def add_process_time_header(request: Request, call_next):
     response = await call_next(request)
     if request.method == "POST" or request.method == "PUT" or request.method == "DELETE":
-        save_state(STATE_FILE, movies, shops, _next_movie_id, _next_shop_id)
+        save_state(STATE_FILE, api_routes.movies, api_routes.shops, api_routes._next_movie_id, api_routes._next_shop_id)
     return response
 
 @app.exception_handler(RequestValidationError)
@@ -31,4 +31,4 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         content= {"detail": msgs}
     )
 
-app.include_router(router)
+app.include_router(api_routes.router)
