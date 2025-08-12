@@ -8,9 +8,9 @@ El propósito de esta práctica es que pasen por la experiencia de programar una
 
 Dada la siguiente realidad:
 
-*Una persona quiere retornar a lo Vintage y por esto decidio crear una franquisia de VideoClubs, en donde espera almacenar información de las diferentes Shops y Movies de cada shop. Para esto, precisa de un grupo de desarrolladores que implementen la API Rest asociada a esta necesidad.*
+*Una persona quiere retornar a lo Vintage y por esto decidió crear una franquicia de VideoClubs, en donde espera almacenar información de las diferentes Shops y Movies de cada shop. Para esto, precisa de un grupo de desarrolladores que implementen la API Rest asociada a esta necesidad.*
 
-*Se deben utilizar las siguiente estructuras:*
+*Se deben utilizar las siguientes estructuras:*
 
 ```python
 Movie:
@@ -30,11 +30,11 @@ Shop:
   movies: List[Movie]
 ```
 
-*La persona espera que **al crear un Shop, no se tengan Movie asociadas**, por lo tanto, deben crearse primer las Shop y luego las Movie al ser creadas ser asociadas en esta. Tampoco quiere usar **la edición del Shop para editar cada lista de Movie, sino que las Movie sean agregadas una vez que se haga una creación al id de Shop asignado**.*
+*La persona espera que **al crear un Shop, no se tengan Movie asociadas**, por lo tanto, deben crearse primero las Shop y luego las Movie, que al ser creadas, sean asociadas a esta. Tampoco quiere usar **la edición del Shop para editar cada lista de Movie, sino que las Movie sean agregadas una vez que se haga una creación al id de Shop asignado**.*
 
-*A su vez, **las Movie no pueden editar atributos de shop o de rent cuando se use la edición de Movie**. El alquiler y el pasaje de una Movie entre Shop debe realizarse en endpoints deferentes.*
+*A su vez, **las Movie no pueden editar atributos de shop o de rent cuando se use la edición de Movie**. El alquiler y el pasaje de una Movie entre Shop debe realizarse en endpoints diferentes.*
 
-*Por último, tener en cuenta que cuando **se elimina un Shop, se deben eliminar todas las Movie que estaba en la estructura general (`movies` dentro de `routes/api_routes.py`)** y al **al eliminar una Movie debe eliminarse dentro de la lista de Shop en la que estaba agregada**.*
+*Por último, tener en cuenta que cuando **se elimina un Shop, se deben eliminar todas las Movie que estaban en la estructura general (`movies` dentro de `routes/api_routes.py`)** y al **eliminar una Movie, debe eliminarse dentro de la lista de Shop en la que estaba agregada**.*
 
 
 ### 📝 Entregable
@@ -65,7 +65,7 @@ README.md
 
 Dentro de `database_manager` se encuentra el código necesario para gestionar el uso de nuestra base de datos en un archivo JSON. Dicho archivo tendrá el nombre de la variable `STATE_FILE` en el archivo de constantes `constants.py`.
 Dentro del directorio `schemas` se tendrá el archivo `schemas.py` en el cual se definirá todos los esquemas necesarios para desarrollar la API Rest.
-En la carpeta `routes` se tendrá el archivo `api_routes.py` donde se implementaran las rutas de la API a desarrollar.
+En la carpeta `routes` se tendrá el archivo `api_routes.py` donde se implementarán las rutas de la API a desarrollar.
 Por último, el código con las rutas de la API se encuentra en `main_base.py`.
 
 ## 🏗️ Uso del proyecto
@@ -81,7 +81,7 @@ uv sync
 ```
 ## 🚀 Uso del servicio
 
-Una vez instaladas las dependencias, se inicial el servicio utilizando el siguiente comando:
+Una vez instaladas las dependencias, se inicia el servicio utilizando el siguiente comando:
 
 ```bash
 # Linux
@@ -91,5 +91,5 @@ uv run fastapi dev src/main.py
 uv run fastapi dev .\src\main.py
 ```
 
-Una vez inicializado el servicio se puede utilizar el mismo a traves de la siguiente url en el navegador: [http://127.0.0.1:8000/](http://127.0.0.1:8000/) o ingresar a la documentación de Swagger del mismo mediante [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs).
+Una vez inicializado el servicio se puede utilizar el mismo a través de la siguiente url en el navegador: [http://127.0.0.1:8000/](http://127.0.0.1:8000/) o ingresar a la documentación de Swagger del mismo mediante [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs).
 
