@@ -11,4 +11,4 @@ class Shop(BaseModel):
 
 class ShopRequestCreate(BaseModel):
 
-class ShopUpdate(BaseModel):
+class ShopRequestUpdate(BaseModel):
