@@ -36,7 +36,6 @@ def create_shop(shop : ShopRequestCreate):
   return new_shop
 
 #Updatear el shop 
-
 @router.put("/shops/{shop_id}", response_model=Shop)
 def update_shop(shop_id : int, new_shop : ShopRequestUpdate):
   if shop_id not in shops.keys():
@@ -46,7 +45,6 @@ def update_shop(shop_id : int, new_shop : ShopRequestUpdate):
   return shops[shop_id]
 
 #Eliminar el shop 
-
 @router.delete("/shops/{shop_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_shop(shop_id : int):
   if shop_id not in shops.keys():
@@ -73,6 +71,14 @@ def read_movie_by_id(movie_id : int):
 def create_movie(movie : MovieRequestCreate):
   global _next_movie_id
   _next_movie_id += 1
-  new_movie = Movie(id=_last_movie_id, **movie.model_dump())
-  items[_last_item_id] = new_item
-  return new_item
+  new_movie = Movie(id=_next_movie_id, **movie.model_dump())
+  movies[_next_movie_id] = new_movie
+  return new_movie
+
+#Eliminar movie
+@router.delete("/movies/{movie_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_movie(movie_id : int):
+  if movie_id not in movies.keys():
+      raise HTTPException(status_code=404, detail=[MOVIE_NOT_FOUND_MESSAGE])
+  _ = movies.pop(movie_id)
+  
