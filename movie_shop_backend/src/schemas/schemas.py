@@ -36,3 +36,5 @@ class ShopRequestCreate(BaseModel):
 class ShopRequestUpdate(BaseModel):
     address: str
     manager: str
+
+#

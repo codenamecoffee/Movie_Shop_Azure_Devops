@@ -1,7 +1,7 @@
-from fastapi import APIRouter, HTTPException, status
-from typing import List, Dict
+from fastapi import APIRouter, HTTPException, status, Query
+from typing import List, Dict, Optional
 
-from src.constants import MOVIE_NOT_FOUND_MESSAGE, SHOP_NOT_FOUND_MESSAGE
+from src.constants import MOVIE_NOT_FOUND_MESSAGE, SHOP_NOT_FOUND_MESSAGE, RESOURCE_NOT_EDITABLE
 from src.schemas.schemas import Movie, MovieRequestCreate, MovieRequestUpdate, Shop, ShopRequestCreate, ShopRequestUpdate
 
 # In-memory "DB"
@@ -26,7 +26,6 @@ de lista de Movie en dicha entidad.
 -> Si elimino un Shop, debo eliminar todas las Movie dentro de la colección movies"
 
 '''
-
 ######## Crud Operations - Shops
 
 
@@ -139,24 +138,23 @@ def delete_movie(movie_id: int):
     # Borramos la movie del shop correspondiente
     shop_id = movie_to_delete.shop
     _ = shops[shop_id].movies.pop(movie_id)
-
-    return
+    
 
 ######## Endpoints especiales (Pendientes)
 
 
 # Alquilar una movie:
-@router.put("/movies/{movie_id}", status_code=status.HTTP_200_OK)
+@router.put("/movies/{movie_id}", response_model=Movie ,status_code=status.HTTP_200_OK)
 def rent_movie(movie_id: int):
   if movie_id not in movies.keys():
     raise HTTPException(status_code=404, detail=[MOVIE_NOT_FOUND_MESSAGE])
   if not movies[movie_id].rent:
     movies[movie_id].rent = True
     return movies[movie_id]
-  return "Ya esta alquilada"
+  raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=[RESOURCE_NOT_EDITABLE])
 
 # Cambiar de shop una movie:
-@router.put("/shop/{shop_id}/movies/{movie_id}", status_code=status.HTTP_200_OK)
+@router.put("/shop/{shop_id}/movies/{movie_id}", response_model=Shop, status_code=status.HTTP_200_OK)
 def change_shop_movie(shop_id: int, movie_id: int):
     if shop_id not in shops:
         raise HTTPException(status_code=404, detail=[SHOP_NOT_FOUND_MESSAGE])
@@ -178,6 +176,54 @@ def change_shop_movie(shop_id: int, movie_id: int):
 
 
 # Devolver una movie (Es decir, el que alquiló, la devuelve):
+@router.put("/movies/{movie_id}", response_model=Movie, status_code=status.HTTP_200_OK)
+def return_movie(movie_id: int):
+  if movie_id not in movies.keys():
+    raise HTTPException(status_code=404, detail=[MOVIE_NOT_FOUND_MESSAGE])
+  if movies[movie_id].rent:
+    movies[movie_id].rent = False
+    return movies[movie_id]
+  raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=[RESOURCE_NOT_EDITABLE])
 
 
 # Obtener Movie por name, gender y/o director (no por Shop)
+@router.get("/movies/search", response_model=List[Movie], status_code=status.HTTP_200_OK)
+# def search_movie(
+#     name: Optional[str] = None, 
+#     gender: Optional[List[str]] = Query(None), 
+#     director: Optional[str] = None
+# ):
+          
+#     results = list(movies.values())
+
+#     if name:
+#       results = [m for m in results if name.lower() in m["name"].lower()]
+
+# # Filtramos por director si se pasó
+#     if director:
+#       results = [m for m in results if director.lower() in m["director"].lower()]
+
+# # Filtramos por géneros si se pasó
+#     if gender:
+#       results = [m for m in results if any(g.lower() in [x.lower() for x in m["gender"]] for g in gender)]
+    
+#     return results
+
+
+def search_movies(
+    name: Optional[str] = Query(None),
+    genre: Optional[str] = Query(None),
+    director: Optional[str] = Query(None)
+):
+    movies = get_movies()  # Trae todas las películas de la base de datos
+    # Filtra según los parámetros recibidos
+    if name:
+        movies = [m for m in movies if m.name.lower() == name.lower()]
+    if genre:
+        movies = [m for m in movies if m.genre.lower() == genre.lower()]
+    if director:
+        movies = [m for m in movies if m.director.lower() == director.lower()]
+    return movies              
+
+#GET /movies?name=casablanca&director=..&gender=romatico&gender=action&gender=.. 
+
