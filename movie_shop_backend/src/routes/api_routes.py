@@ -146,9 +146,38 @@ def delete_movie(movie_id: int):
 
 
 # Alquilar una movie:
-
+@router.put("/movies/{movie_id}", status_code=status.HTTP_200_OK)
+def rent_movie(movie_id: int):
+  if movie_id not in movies.keys():
+    raise HTTPException(status_code=404, detail=[MOVIE_NOT_FOUND_MESSAGE])
+  if not movies[movie_id].rent:
+    movies[movie_id].rent = True
+    return movies[movie_id]
+  return "Ya esta alquilada"
 
 # Cambiar de shop una movie:
+@router.put("/shop/{shop_id}/movies/{movie_id}", status_code=status.HTTP_200_OK)
+def change_shop_movie(shop_id: int, movie_id: int):
+    if shop_id not in shops:
+        raise HTTPException(status_code=404, detail=[SHOP_NOT_FOUND_MESSAGE])
+    if movie_id not in movies:
+        raise HTTPException(status_code=404, detail=[MOVIE_NOT_FOUND_MESSAGE])
+
+    movie_to_change = movies[movie_id]
+
+    # Borramos la movie del shop donde estaba antes
+    shops[movie_to_change.shop].movies.remove(movie_to_change)
+
+    # Cambiamos el id del shop asociado a la movie
+    movie_to_change.shop = shop_id
+
+    # Agregamos la movie al nuevo shop
+    shops[shop_id].movies.append(movie_to_change)
+
+    return shops[shop_id]
 
 
 # Devolver una movie (Es decir, el que alquiló, la devuelve):
+
+
+# Obtener Movie por name, gender y/o director (no por Shop)
