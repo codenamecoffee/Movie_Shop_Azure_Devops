@@ -123,20 +123,24 @@ def update_movie(movie_id : int, new_movie : MovieRequestUpdate):
   shops[movies[movie_id].shop].movies[movie_id].name = new_movie.name
   shops[movies[movie_id].shop].movies[movie_id].director = new_movie.director
   shops[movies[movie_id].shop].movies[movie_id].gender = new_movie.gender
-  return new_movie
+  return movies[movie_id]
+
 
 
 #Eliminar movie (CORRECTO)
 @router.delete("/movies/{movie_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_movie(movie_id : int):
-  if movie_id not in movies.keys():
-      raise HTTPException(status_code=404, detail=[MOVIE_NOT_FOUND_MESSAGE])
-  # Borramos la movie:
-  _ = movies.pop(movie_id)
-  # Borramos la movie del shop en donde se encuentre:
-  shops[movies[movie_id].shop].movies.remove(movies[movie_id])
+def delete_movie(movie_id: int):
+    if movie_id not in movies:
+        raise HTTPException(status_code=404, detail=[MOVIE_NOT_FOUND_MESSAGE])
+    
+    # Guardamos y borramos la movie globalmente
+    movie_to_delete = movies.pop(movie_id)
 
-  
+    # Borramos la movie del shop correspondiente
+    shop_id = movie_to_delete.shop
+    _ = shops[shop_id].movies.pop(movie_id)
+
+    return
 
 ######## Endpoints especiales (Pendientes)
 
