@@ -8,7 +8,7 @@ class Movie(BaseModel):
     director: str
     gender: List[str] #pasamos todos los parametros x upper desp 
     shop : int
-    rent: False #booleano predeterminado false.
+    rent: bool = False #booleano predeterminado false.
 
 # DTO(s)
 class MovieRequestCreate(BaseModel):
@@ -32,7 +32,6 @@ class Shop(BaseModel):
 class ShopRequestCreate(BaseModel):
     address: str
     manager: str
-
 
 class ShopRequestUpdate(BaseModel):
     address: str

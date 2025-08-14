@@ -8,6 +8,7 @@ from src.database_manager.local_file_storage import load_state, save_state
 
 from src.routes import api_routes
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     api_routes.movies, api_routes.shops, api_routes._next_movie_id, api_routes._next_shop_id = load_state(STATE_FILE)
