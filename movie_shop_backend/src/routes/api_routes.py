@@ -14,6 +14,31 @@ router = APIRouter()
 
 
 
+
+# Obtener Movie por name, gender y/o director (no por Shop)
+@router.get("/movies/search", response_model=List[Movie], status_code=status.HTTP_200_OK)
+def search_movies(
+    name: Optional[str] = Query(None),
+    director: Optional[str] = Query(None),
+    gender: Optional[List[str]] = Query(None)
+):
+    # Parte de todas las movies:
+    result = list(movies.values())
+
+    # La lista de movies se irá reduciendo en función de si se ejecutan los if's o no:
+
+    if name: # Si se especificó un nombre para filtrar.
+        result = [m for m in result if m.name.lower() == name.lower()]
+
+    if director: # Si se especificó un director para filtrar.
+        result = [m for m in result if m.director.lower() == director.lower()]
+
+    if gender: # Si se especificaron uno o varios géneros para filtrar.
+        result = [m for m in result if any(g.lower() in [mg.lower() for mg in m.gender] for g in gender)]
+    return result
+
+
+
 ######## Crud Operations - Shops
 
 
@@ -197,26 +222,6 @@ def return_movie(movie_id: int):
   raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=[MOVIE_NOT_RENTED])
 
 
-# Obtener Movie por name, gender y/o director (no por Shop)
-@router.get("/movies/search", response_model=List[Movie], status_code=status.HTTP_200_OK)
-def search_movies(
-    name: Optional[str] = Query(None),
-    director: Optional[str] = Query(None),
-    gender: Optional[List[str]] = Query(None)
-):
-    # Parte de todas las movies:
-    result = list(movies.values())
 
-    # La lista de movies se irá reduciendo en función de si se ejecutan los if's o no:
-    
-    if name: # Si se especificó un nombre para filtrar.
-        result = [m for m in result if m.name.lower() == name.lower()]
-
-    if director: # Si se especificó un director para filtrar.
-        result = [m for m in result if m.director.lower() == director.lower()]
-
-    if gender: # Si se especificaron uno o varios géneros para filtrar.
-        result = [m for m in result if any(g.lower() in [mg.lower() for mg in m.gender] for g in gender)]
-    return result
 
 
