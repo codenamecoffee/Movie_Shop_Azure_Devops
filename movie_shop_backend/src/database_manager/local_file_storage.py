@@ -9,7 +9,7 @@ def save_state(filename: str, movies: Dict[int, Movie], shops: Dict[int, Shop], 
             "id": v.id,
             "address": v.address,
             "manager": v.manager,
-            "movies": [m.id for m in v.movies]
+            "movie_list": [m.id for m in v.movie_list]
         } for k, v in shops.items()},
         "next_movie_id": next_movie_id,
         "next_shop_id": next_shop_id
@@ -34,8 +34,8 @@ def load_state(filename: str):
         # Load shops
         shops.clear()
         for k, v in data["shops"].items():
-            shop_movies = [movies[mid] for mid in v["movies"] if mid in movies]
-            shops[int(k)] = Shop(id=v["id"], address=v["address"], manager=v["manager"], movies=shop_movies)
+            shop_movies = [movies[mid] for mid in v["movie_list"] if mid in movies]
+            shops[int(k)] = Shop(id=v["id"], address=v["address"], manager=v["manager"], movie_list=shop_movies)
         next_movie_id = data["next_movie_id"]
         next_shop_id = data["next_shop_id"]
     return movies, shops, next_movie_id, next_shop_id

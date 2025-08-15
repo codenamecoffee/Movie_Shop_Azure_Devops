@@ -26,7 +26,7 @@ class Shop(BaseModel):
     id: int
     address: str
     manager: str
-    movies: List[Movie]
+    movie_list: List[Movie]
 
 # DTO(s)
 class ShopRequestCreate(BaseModel):
