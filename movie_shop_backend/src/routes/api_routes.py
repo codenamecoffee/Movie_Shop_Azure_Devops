@@ -35,10 +35,22 @@ def search_movies(
 
     if gender: # Si se especificaron uno o varios géneros para filtrar.
         
-        result = [movie for movie in result  # para cada movie en result, buscar
-                  if any(movie_gender.lower() in  # si algún género (en minúscula) se encuentra en,
-                  [movie_gender.lower() for movie_gender in movie.gender] # la lista de géneros de la movie,
-                  for movie_gender in gender)] # para cada género en la lista de géneros de la movie.
+        # result = [movie for movie in result  # para cada movie en result, buscar
+        #           if any(movie_gender.lower() in  # si algún género (en minúscula) se encuentra en,
+        #           [movie_gender.lower() for movie_gender in movie.gender] # la lista de géneros de la movie,
+        #           for movie_gender in gender)] # para cada género en la lista de géneros de la movie.
+        
+
+        # Usando un for 'largo' en lugar de comprehention:
+        filtered_result = []  # Para no modificar result mientras la recorremos.
+
+        for movie in result:
+          gender_list = [movie_gender.lower() for movie_gender in movie.gender]
+          if any(movie_gender.lower() in gender_list for movie_gender in gender):
+              filtered_result.append(movie)
+              
+        result = filtered_result  # Ahora si guardamos los valores encontrados en result.
+
     return result
 
 
