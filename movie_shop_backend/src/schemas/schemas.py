@@ -6,7 +6,7 @@ class Movie(BaseModel):
     id: int
     name: str
     director: str
-    genders: List[str] # pasamos todos los parametros x lower después. 
+    genres: List[str] # pasamos todos los parametros x lower después. 
     shop : int
     rent: bool = False # booleano predeterminado false.
 
@@ -14,12 +14,12 @@ class Movie(BaseModel):
 class MovieRequestCreate(BaseModel):
     name: str
     director: str
-    genders: List[str]
+    genres: List[str]
 
 class MovieRequestUpdate(BaseModel):
     name: str
     director: str
-    genders: List[str]
+    genres: List[str]
 
 # Modelo
 class Shop(BaseModel):

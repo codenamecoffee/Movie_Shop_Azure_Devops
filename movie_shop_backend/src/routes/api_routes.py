@@ -20,7 +20,7 @@ router = APIRouter()
 def search_movies(
     name: Optional[str] = Query(None),
     director: Optional[str] = Query(None),
-    genders: Optional[List[str]] = Query(None)
+    genres: Optional[List[str]] = Query(None)
 ):
     # Parte de todas las movies:
     result = list(movies.values())
@@ -33,7 +33,7 @@ def search_movies(
     if director: # Si se especificó un director para filtrar.
         result = [movie for movie in result if movie.director.lower() == director.lower()]
 
-    if genders: # Si se especificaron uno o varios géneros para filtrar.
+    if genres: # Si se especificaron uno o varios géneros para filtrar.
         
         # result = [movie for movie in result  # para cada movie en result, buscar
         #           if any(movie_gender.lower() in  # si algún género (en minúscula) se encuentra en,
@@ -45,8 +45,8 @@ def search_movies(
         filtered_result = []  # Para no modificar result mientras la recorremos.
 
         for movie in result:
-          gender_list = [movie_gender.lower() for movie_gender in movie.genders]
-          if all(movie_gender.lower() in gender_list for movie_gender in genders):
+          genre_list = [movie_gender.lower() for movie_gender in movie.genres]
+          if all(movie_gender.lower() in genre_list for movie_gender in genres):
               filtered_result.append(movie)
               
         result = filtered_result  # Se guardan las movies que tengan TODOS los géneros especificados.
@@ -150,14 +150,14 @@ def update_movie(movie_id : int, new_movie : MovieRequestUpdate):
   # Actualizamos la movie:
   movies[movie_id].name = new_movie.name
   movies[movie_id].director = new_movie.director
-  movies[movie_id].genders = new_movie.genders
+  movies[movie_id].genres = new_movie.genres
   # Actualizamos la movie en el shop en donde se encuentre:
   shop_id = movies[movie_id].shop
   for movie in shops[shop_id].movies:
     if movie.id == movie_id:
       movie.name = new_movie.name
       movie.director = new_movie.director
-      movie.genders = new_movie.genders    
+      movie.genres = new_movie.genres    
   return movies[movie_id]
 
 
