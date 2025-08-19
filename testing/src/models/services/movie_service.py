@@ -16,3 +16,12 @@ class MovieService(ServiceBase):
             config=config,
             response_model=response_type,
         )
+   
+    
+    def get_movie_by_id(self, movie_id: int, response_type: Type[T], config: dict | None = None) -> Response[T]:
+        config = config or self.default_config
+        return self.get(
+            f"{self.url}/{movie_id}",
+            config=config,
+            response_model=response_type,
+        )

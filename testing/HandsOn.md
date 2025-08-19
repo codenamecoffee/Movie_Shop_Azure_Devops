@@ -8,7 +8,7 @@ El propósito de esta práctica es que desarrollen pruebas automatizadas para la
 
 ### 📝 Planificación de pruebas
 
-- Crear un **Test Plan** en Azure DevOps.  
+- Crear un **Test Plan** en testrail.  
 - Documentar **casos de prueba** que verifiquen el funcionamiento de los endpoints de la API.  
 - Determinar cuáles de estos casos pueden ser **automatizados**.
 
