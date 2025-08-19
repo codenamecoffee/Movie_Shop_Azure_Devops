@@ -28,13 +28,17 @@ def search_movies(
     # La lista de movies se irá reduciendo en función de si se ejecutan los if's o no:
 
     if name: # Si se especificó un nombre para filtrar.
-        result = [m for m in result if m.name.lower() == name.lower()]
+        result = [movie for movie in result if movie.name.lower() == name.lower()]
 
     if director: # Si se especificó un director para filtrar.
-        result = [m for m in result if m.director.lower() == director.lower()]
+        result = [movie for movie in result if movie.director.lower() == director.lower()]
 
     if gender: # Si se especificaron uno o varios géneros para filtrar.
-        result = [m for m in result if any(g.lower() in [mg.lower() for mg in m.gender] for g in gender)]
+        
+        result = [movie for movie in result  # para cada movie en result, buscar
+                  if any(movie_gender.lower() in  # si algún género (en minúscula) se encuentra en,
+                  [movie_gender.lower() for movie_gender in movie.gender] # la lista de géneros de la movie,
+                  for movie_gender in gender)] # para cada género en la lista de géneros de la movie.
     return result
 
 
@@ -71,10 +75,19 @@ def create_shop(shop : ShopRequestCreate):
 def update_shop(shop_id : int, new_shop : ShopRequestUpdate):
   if shop_id not in shops.keys():
       raise HTTPException(status_code=404, detail=[SHOP_NOT_FOUND_MESSAGE])
-  # Actualizamos el shop:
-  shops[shop_id].address = new_shop.address
-  shops[shop_id].manager = new_shop.manager
-  return shops[shop_id]
+  
+  # # Actualizamos el shop: #(- Mala práctica -)
+  # shops[shop_id].address = new_shop.address
+  # shops[shop_id].manager = new_shop.manager
+  # return shops[shop_id]
+
+  # Obtenemos el shop para actualizarlo:
+  shop = shops[shop_id]
+
+  # Lo actualizamos
+  shop.adress = new_shop.adress
+  shop.manager = new_shop.manager
+  return shop
 
 
 # Eliminar shop por id
