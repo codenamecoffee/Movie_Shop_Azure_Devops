@@ -20,7 +20,7 @@ router = APIRouter()
 def search_movies(
     name: Optional[str] = Query(None),
     director: Optional[str] = Query(None),
-    gender: Optional[List[str]] = Query(None)
+    genders: Optional[List[str]] = Query(None)
 ):
     # Parte de todas las movies:
     result = list(movies.values())
@@ -33,7 +33,7 @@ def search_movies(
     if director: # Si se especificó un director para filtrar.
         result = [movie for movie in result if movie.director.lower() == director.lower()]
 
-    if gender: # Si se especificaron uno o varios géneros para filtrar.
+    if genders: # Si se especificaron uno o varios géneros para filtrar.
         
         # result = [movie for movie in result  # para cada movie en result, buscar
         #           if any(movie_gender.lower() in  # si algún género (en minúscula) se encuentra en,
@@ -45,11 +45,11 @@ def search_movies(
         filtered_result = []  # Para no modificar result mientras la recorremos.
 
         for movie in result:
-          gender_list = [movie_gender.lower() for movie_gender in movie.gender]
-          if any(movie_gender.lower() in gender_list for movie_gender in gender):
+          gender_list = [movie_gender.lower() for movie_gender in movie.genders]
+          if all(movie_gender.lower() in gender_list for movie_gender in genders):
               filtered_result.append(movie)
               
-        result = filtered_result  # Ahora si guardamos los valores encontrados en result.
+        result = filtered_result  # Se guardan las movies que tengan TODOS los géneros especificados.
 
     return result
 
@@ -76,7 +76,7 @@ def read_shop_by_id(shop_id : int):
 @router.post("/shops", response_model=Shop, status_code=status.HTTP_201_CREATED)
 def create_shop(shop : ShopRequestCreate):
   global _next_shop_id
-  new_shop = Shop(id = _next_shop_id, **shop.model_dump(), movie_list=[]) # Pusimos una lista de movies vacia para que no de error y asi no modificar el dto
+  new_shop = Shop(id = _next_shop_id, **shop.model_dump(), movies=[]) # Pusimos una lista de movies vacia para que no de error y asi no modificar el dto
   shops[_next_shop_id] = new_shop
   _next_shop_id += 1 # Actualizamos contador al final.
   return new_shop
@@ -97,14 +97,14 @@ def update_shop(shop_id : int, new_shop : ShopRequestUpdate):
   return shop
 
 
-# Eliminar shop por id
+# Eliminar shop por id - (Pendiente corregir)
 @router.delete("/shops/{shop_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_shop(shop_id : int):
   if shop_id not in shops.keys():
       raise HTTPException(status_code=404, detail=[SHOP_NOT_FOUND_MESSAGE])
   # Si el shop no está vacío:
-  if shops[shop_id].movie_list:
-    shops[shop_id].movie_list = [] # Eliminamos las movies.
+  if shops[shop_id].movies:
+    shops[shop_id].movies = [] # Eliminamos las movies.
   # Borramos el shop:
   _ = shops.pop(shop_id)
 
@@ -137,7 +137,7 @@ def create_movie(movie : MovieRequestCreate, shop_id : int):
   new_movie = Movie(id=_next_movie_id, shop=shop_id, **movie.model_dump())
   movies[_next_movie_id] = new_movie
   # Agregamos la pelicula al shop especificado:
-  shops[shop_id].movie_list.append(new_movie)
+  shops[shop_id].movies.append(new_movie)
   _next_movie_id += 1 # Actualizamos contador al final.
   return new_movie
 
@@ -150,14 +150,14 @@ def update_movie(movie_id : int, new_movie : MovieRequestUpdate):
   # Actualizamos la movie:
   movies[movie_id].name = new_movie.name
   movies[movie_id].director = new_movie.director
-  movies[movie_id].gender = new_movie.gender
+  movies[movie_id].genders = new_movie.genders
   # Actualizamos la movie en el shop en donde se encuentre:
   shop_id = movies[movie_id].shop
-  for movie in shops[shop_id].movie_list:
+  for movie in shops[shop_id].movies:
     if movie.id == movie_id:
       movie.name = new_movie.name
       movie.director = new_movie.director
-      movie.gender = new_movie.gender     
+      movie.genders = new_movie.genders    
   return movies[movie_id]
 
 
@@ -172,7 +172,7 @@ def delete_movie(movie_id: int):
 
     # Borramos la movie del shop correspondiente:
     shop_id = movie_to_delete.shop
-    _ = shops[shop_id].movie_list.remove(movie_to_delete)
+    _ = shops[shop_id].movies.remove(movie_to_delete)
     
 
 
@@ -185,7 +185,7 @@ def get_movies_by_shop(shop_id: int):
    if shop_id not in shops.keys():
       raise HTTPException(status_code=404, detail=[SHOP_NOT_FOUND_MESSAGE])
    
-   return shops[shop_id].movie_list
+   return shops[shop_id].movies
 
 
 # Consultar todas las movies DISPONIBLES por Shop
@@ -195,7 +195,7 @@ def get_available_movies_by_shop(shop_id: int):
       raise HTTPException(status_code=404, detail=[SHOP_NOT_FOUND_MESSAGE])
    
    # Usamos list comprehention para generar una list[Movie] específica:
-   return [movie for movie in shops[shop_id].movie_list if not movie.rent]
+   return [movie for movie in shops[shop_id].movies if not movie.rent]
 
 
 # Alquilar una movie: 
@@ -220,13 +220,13 @@ def change_shop_movie(shop_id: int, movie_id: int):
     movie_to_change = movies[movie_id]
 
     # Borramos la movie del shop donde estaba antes:
-    shops[movie_to_change.shop].movie_list.remove(movie_to_change)
+    shops[movie_to_change.shop].movies.remove(movie_to_change)
 
     # Cambiamos el id del shop asociado a la movie:
     movie_to_change.shop = shop_id
 
     # Agregamos la movie al nuevo shop:
-    shops[shop_id].movie_list.append(movie_to_change)
+    shops[shop_id].movies.append(movie_to_change)
 
     return shops[shop_id]
 
