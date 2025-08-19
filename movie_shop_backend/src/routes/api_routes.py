@@ -87,17 +87,12 @@ def create_shop(shop : ShopRequestCreate):
 def update_shop(shop_id : int, new_shop : ShopRequestUpdate):
   if shop_id not in shops.keys():
       raise HTTPException(status_code=404, detail=[SHOP_NOT_FOUND_MESSAGE])
-  
-  # # Actualizamos el shop: #(- Mala práctica -)
-  # shops[shop_id].address = new_shop.address
-  # shops[shop_id].manager = new_shop.manager
-  # return shops[shop_id]
 
   # Obtenemos el shop para actualizarlo:
   shop = shops[shop_id]
 
   # Lo actualizamos
-  shop.adress = new_shop.adress
+  shop.address = new_shop.address
   shop.manager = new_shop.manager
   return shop
 
