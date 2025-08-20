@@ -97,16 +97,26 @@ def update_shop(shop_id : int, new_shop : ShopRequestUpdate):
   return shop
 
 
-# Eliminar shop por id - (Pendiente corregir)
+# Eliminar shop por id
 @router.delete("/shops/{shop_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_shop(shop_id : int):
   if shop_id not in shops.keys():
       raise HTTPException(status_code=404, detail=[SHOP_NOT_FOUND_MESSAGE])
+
+  id = shop_id # Variable auxiliar
+
   # Si el shop no está vacío:
   if shops[shop_id].movies:
     shops[shop_id].movies = [] # Eliminamos las movies.
+  
   # Borramos el shop:
   _ = shops.pop(shop_id)
+
+  # Buscamos las movies que pertenecian al shop
+  movie_list = list(movies.values()) # lista auxiliar
+  for movie in movie_list:
+     if movie.shop == id:
+      _ = movies.pop(movie.id) #Eliminamos las movies del diccionario
 
 
 
