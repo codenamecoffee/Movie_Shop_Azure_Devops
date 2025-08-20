@@ -1,16 +1,22 @@
 import os
+import sys
 import pytest
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")))  # agrega testing/ al path
 from src.models.responses.base.response import Response
-from services import MovieService
 
+# from services import MovieService
+
+
+from src.models.services.movie_service import MovieService
 
 @pytest.mark.smoke
-
 def test_get_movie_by_id(movie_service, created_movie):
     movie_id = created_movie["id"]
-    response = movie_service.get_movie_by_id(movie_id)
-    assert response.status_code == 200
-    data = response.json()
+    response = movie_service.get_movie_by_id(movie_id, response_type=dict)
+    data = response.data
+
+    assert response.status == 200
+    # data = response.json()
     assert data["id"] == movie_id
     assert data["name"] == "Matrix"
     assert data["director"] == "Wachowski"
