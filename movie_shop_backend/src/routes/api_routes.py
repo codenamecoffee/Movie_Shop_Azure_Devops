@@ -254,8 +254,3 @@ def return_movie(movie_id: int):
     movies[movie_id].rent = False
     return movies[movie_id]
   raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=[MOVIE_NOT_RENTED])
-
-
-
-
-
