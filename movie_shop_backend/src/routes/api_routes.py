@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, status, Query
 from typing import List, Dict, Optional
 
 from src.constants import MOVIE_NOT_FOUND_MESSAGE, SHOP_NOT_FOUND_MESSAGE, MOVIE_NOT_RENTED, MOVIE_ALREADY_RENTED
-from src.schemas.schemas import Movie, MovieRequestCreate, MovieRequestUpdate, Shop, ShopRequestCreate, ShopRequestUpdate
+from src.schemas.schemas import Movie, MovieRequestCreate, MovieRequestUpdate, Shop, ShopRequestCreate, ShopRequestUpdate, ChangeShopRequest
 
 # In-memory "DB"
 movies: Dict[int, Movie] = {}
@@ -220,8 +220,12 @@ def rent_movie(movie_id: int):
 
 
 # Cambiar de shop una movie:
-@router.put("/shops/{shop_id}/movies/{movie_id}", response_model=Shop, status_code=status.HTTP_200_OK)
-def change_shop_movie(shop_id: int, movie_id: int):
+@router.patch("/movies/{movie_id}/change-shop", response_model=Shop, status_code=status.HTTP_200_OK) 
+def change_shop_movie(movie_id: int, change_shop: ChangeShopRequest):
+    
+    # Obtenemos el id del shop a través del dto (No desde la URL)
+    shop_id = change_shop.shop_id
+
     if shop_id not in shops.keys():
         raise HTTPException(status_code=404, detail=[SHOP_NOT_FOUND_MESSAGE])
     if movie_id not in movies.keys():

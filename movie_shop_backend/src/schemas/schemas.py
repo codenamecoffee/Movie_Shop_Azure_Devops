@@ -20,6 +20,7 @@ class MovieRequestUpdate(BaseModel):
     name: str
     director: str
     genres: List[str]
+    
 
 # Modelo
 class Shop(BaseModel):
@@ -36,3 +37,6 @@ class ShopRequestCreate(BaseModel):
 class ShopRequestUpdate(BaseModel):
     address: str
     manager: str
+
+class ChangeShopRequest(BaseModel):
+    shop_id: int
