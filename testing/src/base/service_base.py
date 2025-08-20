@@ -143,17 +143,10 @@ class ServiceBase(Session):
 
         try:
             raw_data = response.json()
-            # if response_model and isinstance(raw_data, list):
-            #     model = get_args(response_model)[0]
-            #     parsed_data = [model.model_validate(item) for item in raw_data]
-            # elif response_model:
-            #     parsed_data = response_model.model_validate(raw_data)
-            # else:
-            #     parsed_data = raw_data
-            if response_model and isinstance(raw_data, list) and hasattr(response_model, "model_validate"):
+            if response_model and isinstance(raw_data, list):
                 model = get_args(response_model)[0]
                 parsed_data = [model.model_validate(item) for item in raw_data]
-            elif response_model and hasattr(response_model, "model_validate"):
+            elif response_model:
                 parsed_data = response_model.model_validate(raw_data)
             else:
                 parsed_data = raw_data
