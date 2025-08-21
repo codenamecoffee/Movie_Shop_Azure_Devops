@@ -4,8 +4,8 @@ from src.models.responses.base.response import T, Response
 
 
 class MovieService(ServiceBase):
-    def __init__(self):
-        super().__init__("movies")
+    def __init__(self, base_url: str = ""):
+        super().__init__("movies", base_url=base_url)
 
     def get_movies(
         self,  response_type: Type[T], config: dict | None = None
@@ -13,6 +13,58 @@ class MovieService(ServiceBase):
         config = config or self.default_config
         return self.get(
             f"{self.url}",
+            config=config,
+            response_model=response_type,
+        )
+   
+    
+    def get_movie_by_id(self, movie_id: int, response_type: Type[T], config: dict | None = None) -> Response[T]:
+        config = config or self.default_config
+        return self.get(
+            f"{self.url}/{movie_id}",
+            config=config,
+            response_model=response_type,
+        )
+   
+    # def get_movie_by_id(self, movie_id: int, response_type: Type[T] = None, config: dict | None = None) -> Response[T]:
+    #     config = config or self.default_config
+    #     return self.get(
+    #         f"{self.url}/{movie_id}",
+    #         config=config,
+    #         response_model=response_type,
+    #     )
+
+    
+    # def create_movie(self, movie_data: dict, response_type: Type[T] = None, config: dict | None = None) -> Response[T]:
+    #     config = config or self.default_config
+    #     return self.post(
+    #         f"{self.url}",
+    #         data=movie_data,
+    #         config=config,
+    #         response_model=response_type,
+    #     )
+    
+
+    def create_movie(self, shop_id: int, movie_data: dict, response_type: Type[T] = None, config: dict | None = None) -> Response[T]:
+        config = config or self.default_config
+        url = f"{self.base_url}/shops/{shop_id}/movies"
+        return self.post(
+            url,
+            data=movie_data,
+            config=config,
+            response_model=response_type,
+        )
+    
+    '''
+    def create_movie(self, movie_data: dict, response_type: Type[T] = None):
+        return self.post(f"{self.url}", data=movie_data, response_model=response_type)
+'''
+
+    
+    def delete_movie(self, movie_id: int, response_type: Type[T] = None, config: dict | None = None) -> Response[T]:
+        config = config or self.default_config
+        return self.delete(
+            f"{self.url}/{movie_id}",
             config=config,
             response_model=response_type,
         )
