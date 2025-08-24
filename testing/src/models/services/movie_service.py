@@ -68,3 +68,13 @@ class MovieService(ServiceBase):
             config=config,
             response_model=response_type,
         )
+    #agregue esto
+    def update_movie(self, movie_id: int, movie_data: dict, response_type: Type[T] = None, config: dict | None = None) -> Response[T]:
+        config = config or self.default_config
+        url = f"{self.base_url}/movies/{movie_id}"
+        return self.put(
+            url,
+            data=movie_data,
+            config=config,
+            response_model=response_type,
+        )
