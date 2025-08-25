@@ -78,7 +78,7 @@ def create_shop(shop: ShopRequestCreate):
     global _next_shop_id
 
     # Validaciones de campos obligatorios
-    if not shop.address or shop.address.strip() == "": #chequeo empty
+    if not shop.address or shop.address.strip() == "": # chequeo empty
         raise HTTPException(status_code=422, detail=["Address is required"])
     if not shop.manager or shop.manager.strip() == "":
         raise HTTPException(status_code=422, detail=["Manager is required"])
@@ -99,6 +99,13 @@ def create_shop(shop: ShopRequestCreate):
 def update_shop(shop_id : int, new_shop : ShopRequestUpdate):
   if shop_id not in shops.keys():
       raise HTTPException(status_code=404, detail=[SHOP_NOT_FOUND_MESSAGE])
+
+
+  # Validaciones de campos obligatorios
+  if not new_shop.address or new_shop.address.strip() == "": 
+    raise HTTPException(status_code=422, detail=["Address is required"])
+  if not new_shop.manager or new_shop.manager.strip() == "":
+    raise HTTPException(status_code=422, detail=["Manager is required"])
 
   # Obtenemos el shop para actualizarlo:
   shop = shops[shop_id]

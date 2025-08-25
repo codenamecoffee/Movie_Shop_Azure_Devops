@@ -7,9 +7,7 @@ class MovieService(ServiceBase):
     def __init__(self, base_url: str = ""):
         super().__init__("movies", base_url=base_url)
 
-    def get_movies(
-        self,  response_type: Type[T], config: dict | None = None
-    ) -> Response[T]:
+    def get_movies(self,  response_type: Type[T], config: dict | None = None) -> Response[T]:
         config = config or self.default_config
         return self.get(
             f"{self.url}",
@@ -61,6 +59,8 @@ class MovieService(ServiceBase):
             config=config,
             response_model=response_type,
         )
+    
+
     #agregue esto
     def update_movie(self, movie_id: int, movie_data: dict, response_type: Type[T] = None, config: dict | None = None) -> Response[T]:
         config = config or self.default_config
@@ -72,6 +72,7 @@ class MovieService(ServiceBase):
             response_model=response_type,
         )
     
+
     def change_shop_movie(self, movie_id: int, shop_id: int, response_type: Type[T] = None, config: dict | None = None) -> Response[T]:
         config = config or self.default_config
         url = f"{self.base_url}/movies/{movie_id}/change-shop"
@@ -83,6 +84,7 @@ class MovieService(ServiceBase):
             response_model=response_type
         )
 
+
     def rent_movie(self, movie_id: int, response_type: Type[T] = None, config: dict | None = None) -> Response[T]:
         config = config or self.default_config
         url = f"{self.base_url}/movies/{movie_id}/rent-movie"
@@ -92,6 +94,8 @@ class MovieService(ServiceBase):
             config=config,
             response_model=response_type
     )
+
+
     #devuelve pelicula previamente alquilada
     def return_movie(self, movie_id: int, response_type: Type[T] = None, config: dict | None = None) -> Response[T]:
         config = config or self.default_config

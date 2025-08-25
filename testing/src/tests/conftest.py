@@ -10,14 +10,17 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"
 # Carga las variables de entorno
 load_dotenv()
 
+# Base URL de la API (Creado el .env)
+BASE_URL = os.getenv("BASE_URL")
+
 # Fixtures de servicios
 @pytest.fixture(scope="module")
 def movie_service():
-    return MovieService(base_url="http://127.0.0.1:8000")
+    return MovieService(base_url=BASE_URL)  # Antes decía la ruta "http://127.0.0.1:8000"
 
 @pytest.fixture(scope="module")
 def shop_service():
-    return ShopService(base_url="http://127.0.0.1:8000")
+    return ShopService(base_url=BASE_URL)  # Antes decía la ruta "http://127.0.0.1:8000"
 
 @pytest.fixture
 def created_shop(shop_service):
@@ -29,16 +32,29 @@ def created_shop(shop_service):
     response = shop_service.create_shop(shop_data=shop_data)
     shop = response.data
 
-    if "id" not in shop:
-        raise Exception(f"Error creando shop: {shop}")
+    # if "id" not in shop:
+    #     raise Exception(f"Error creando shop: {shop}")
 
-    yield shop  # Entrega el shop al test
+    # yield shop  # Entrega el shop al test
 
-    # --- Teardown: eliminar shop después del test ---
+    # # --- Teardown: eliminar shop después del test ---
+    # try:
+    #     shop_service.delete_shop(shop["id"])
+    # except Exception as e:
+    #     print(f"Error eliminando shop {shop['id']}: {e}")
+
+     # Verifica que el shop se creó correctamente
+    assert response.status == 201, f"Error al crear shop: {response.data}"
+    assert "id" in shop, f"Shop creado sin id: {shop}"
+
     try:
-        shop_service.delete_shop(shop["id"])
-    except Exception as e:
-        print(f"Error eliminando shop {shop['id']}: {e}")
+        yield shop  # Entrega el shop al test
+    finally:
+        # Teardown: intenta borrar el shop siempre
+        try:
+            shop_service.delete_shop(shop["id"])
+        except Exception as e:
+            print(f"[Teardown] Error eliminando shop {shop.get('id', 'N/A')}: {e}")
 
 @pytest.fixture
 def created_movie(movie_service, created_shop):
