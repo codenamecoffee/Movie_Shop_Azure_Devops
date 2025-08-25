@@ -106,3 +106,27 @@ class MovieService(ServiceBase):
             config=config,
             response_model=response_type
         )
+
+
+    # Necesario en test_search_movies.py
+    def search_movies(self, name: str = None, director: str = None, genres: list = None, response_type: Type[T] = None, config: dict | None = None) -> Response[T]:
+        config = config or self.default_config
+        
+        # Construir parámetros de query string:
+        params = {}
+        if name:
+            params['name'] = name
+        if director:
+            params['director'] = director
+        if genres:
+            # Para múltiples géneros, FastAPI espera que se repita el parámetro
+            # Esto será manejado automáticamente por requests
+            params['genres'] = genres
+            
+        url = f"{self.base_url}/movies/search"
+        return self.get(
+            url,
+            params=params,  # Enviamos como query parameters
+            config=config,
+            response_model=response_type
+        )
