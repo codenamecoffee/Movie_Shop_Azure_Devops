@@ -20,3 +20,13 @@ class TestDeleteShop:
         response = shop_service.delete_shop(shop_id=invalid_shop_id)
         assert response.status == 404
 
+    #C30
+    @pytest.mark.negative # id no numérico
+    def test_delete_shop_with_non_numerical_id(self, shop_service):
+        non_numerical_id = "abc"
+        response = shop_service.delete_shop(shop_id=non_numerical_id)
+        assert response.status == 422
+
+    
+
+    

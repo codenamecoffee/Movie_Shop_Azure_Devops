@@ -133,12 +133,18 @@ def read_all_movies():
   return list(movies.values())
 
 
-# Obtener movie por id
+# Obtener movie por id CON VALIDACIONES NECESARIAS PARA LOS TESTS
 @router.get("/movies/{movie_id}", response_model=Movie, status_code=status.HTTP_200_OK)
-def read_movie_by_id(movie_id : int):
-  if movie_id not in movies.keys():
-      raise HTTPException(status_code=404, detail=[MOVIE_NOT_FOUND_MESSAGE])
-  return movies[movie_id]
+def read_movie_by_id(movie_id: int):  # mantenemos int
+    # validamos que sea positivo
+    if movie_id <= 0:
+        raise HTTPException(status_code=422, detail=["Movie ID must be a positive number"])
+    
+    # validamos existencia
+    if movie_id not in movies.keys():
+        raise HTTPException(status_code=404, detail=[MOVIE_NOT_FOUND_MESSAGE])
+    
+    return movies[movie_id]
 
 
 # # Crear movie

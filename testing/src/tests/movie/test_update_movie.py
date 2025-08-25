@@ -81,4 +81,13 @@ class TestUpdateMovie:
         }  # eliminamos el campo genres
         response = movie_service.update_movie(created_movie["id"], movie_data)
         assert response.status == 422
-        
+
+    @pytest.mark.negative
+    def test_update_movie_with_empty_movieid(self, movie_service, sample_movie_data):
+        invalid_movie_id = None
+        response = movie_service.update_movie(
+            movie_id=invalid_movie_id,
+            movie_data=sample_movie_data,
+            response_type=dict
+        )
+        assert response.status == 422

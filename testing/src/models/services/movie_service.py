@@ -25,14 +25,7 @@ class MovieService(ServiceBase):
             config=config,
             response_model=response_type,
         )
-   
-    # def get_movie_by_id(self, movie_id: int, response_type: Type[T] = None, config: dict | None = None) -> Response[T]:
-    #     config = config or self.default_config
-    #     return self.get(
-    #         f"{self.url}/{movie_id}",
-    #         config=config,
-    #         response_model=response_type,
-    #     )
+
 
     
     # def create_movie(self, movie_data: dict, response_type: Type[T] = None, config: dict | None = None) -> Response[T]:
@@ -77,4 +70,35 @@ class MovieService(ServiceBase):
             data=movie_data,
             config=config,
             response_model=response_type,
+        )
+    
+    def change_shop_movie(self, movie_id: int, shop_id: int, response_type: Type[T] = None, config: dict | None = None) -> Response[T]:
+        config = config or self.default_config
+        url = f"{self.base_url}/movies/{movie_id}/change-shop"
+        data = {"shop_id": shop_id}
+        return self.patch(
+            url,
+            data=data,
+            config=config,
+            response_model=response_type
+        )
+
+    def rent_movie(self, movie_id: int, response_type: Type[T] = None, config: dict | None = None) -> Response[T]:
+        config = config or self.default_config
+        url = f"{self.base_url}/movies/{movie_id}/rent-movie"
+        return self.put(
+            url,
+            data=None,  # no necesitamos enviar body
+            config=config,
+            response_model=response_type
+    )
+    #devuelve pelicula previamente alquilada
+    def return_movie(self, movie_id: int, response_type: Type[T] = None, config: dict | None = None) -> Response[T]:
+        config = config or self.default_config
+        url = f"{self.base_url}/movies/{movie_id}/return-movie"
+        return self.put(
+            url,
+            data=None,  # no enviamos body
+            config=config,
+            response_model=response_type
         )

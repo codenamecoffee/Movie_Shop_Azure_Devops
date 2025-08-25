@@ -3,13 +3,13 @@ import sys
 import pytest
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")))
 from src.models.responses.base.response import Response
-#IMPORTANTE FALTAN LOS DEL SHOP ID
+#terminado ;)
 class TestCreateMovie:
 
     #C15
     @pytest.mark.smoke
     def test_create_movie_with_existing_shop(self, movie_service, created_shop, sample_movie_data):
-        """Crear película con shop existente y múltiples géneros"""
+        #Crear película con shop existente y múltiples géneros
         movie_data = sample_movie_data.copy()
         movie_data["genres"] = ["Action", "Sci-Fi"] #buscar
         response = movie_service.create_movie(shop_id=created_shop["id"], movie_data=movie_data)
@@ -57,26 +57,12 @@ class TestCreateMovie:
         response = movie_service.create_movie(shop_id=invalid_shop_id, movie_data=sample_movie_data)
         assert response.status in [404]
 
-    # def test_create_movie_with_non_numerical_shop(self, movie_service, sample_movie_data):
-    #     #Crear película con shop no numérico
-    #     invalid_shop_id = "abc"
-    #     response = movie_service.create_movie(shop_id=invalid_shop_id, movie_data=sample_movie_data)
-    #     assert response.status in [422]
-
-        #todavia no tenemos la api bien configarada para este caso xq necesitamos q nos tire un 422 y solo tira 404 que es inexistente
-    # def test_create_movie_with_empty_shop(self, movie_service, sample_movie_data):
-    #     #Crear película con shop vacio
-    #     invalid_shop_id = ""
-    #     response = movie_service.create_movie(shop_id=invalid_shop_id, movie_data=sample_movie_data)
-    #     assert response.status in [422]
-    
-#sigo aca abajo perdon por el desorden federiko
     #C74
     @pytest.mark.negative
     def test_create_movie_without_director(self, movie_service, created_shop, sample_movie_data):
      #eliminamos el campo
         movie_data = sample_movie_data.copy()
-        movie_data.pop("director")  # lo sacamos directamente
+        movie_data.pop("director")  # lo sacamos directamente, implementamos el pop en vez de crear todos los campos de a uno y sacar ese
         response = movie_service.create_movie(shop_id=created_shop["id"], movie_data=movie_data)
         assert response.status == 422
     #C73
@@ -96,5 +82,25 @@ class TestCreateMovie:
         response = movie_service.create_movie(shop_id=created_shop["id"], movie_data=movie_data)
         assert response.status == 422
 
+    #C25
+    @pytest.mark.negative
+    def test_create_movie_with_non_numerical_shop(self, movie_service, sample_movie_data):
+        #Crear película con shop no numérico
+        invalid_shop_id = "abc"
+        response = movie_service.create_movie(shop_id=invalid_shop_id, movie_data=sample_movie_data)
+        assert response.status in [422]
 
-    
+    #C80
+    @pytest.mark.negative
+    def test_create_movie_with_empty_shop(self, movie_service, sample_movie_data):
+        invalid_shop_id = ""
+        response = movie_service.create_movie(shop_id=invalid_shop_id, movie_data=sample_movie_data)
+        assert response.status == 404
+
+    #c81
+    @pytest.mark.negative
+    def test_create_movie_without_shop_id(self, movie_service, sample_movie_data):
+        #Crea movie sin pasar shop_id, simulando que no se manda
+        # Ponemos None para simular que no se manda el shop_id
+        response = movie_service.create_movie(shop_id=None, movie_data=sample_movie_data)
+        assert response.status == 422
