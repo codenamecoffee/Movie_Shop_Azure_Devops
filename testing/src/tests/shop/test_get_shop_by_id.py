@@ -9,7 +9,7 @@ BASE_URL = os.getenv("BASE_URL")
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")))
 
-class TestGetShopById:
+class TestGetShopById:  # Faltan: C3 y C4 (Que son de Read All Shops)
 
     # C10
     @pytest.mark.smoke

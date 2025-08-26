@@ -34,7 +34,7 @@ class TestDeleteShop:
         assert get_response.status == 404 # Not Found
 
 
-    # C90 - Borra un shop con movies y chequea que borró también las movies.
+    # C90 
     @pytest.mark.smoke # caso correcto
     def test_delete_shop_with_an_existing_shop_id(self, shop_service, movie_service, created_shop):
         # Creamos shop con fixtures:
@@ -59,7 +59,7 @@ class TestDeleteShop:
 
 
     # C27
-    @pytest.mark.negative # id inexistente
+    @pytest.mark.negative 
     def test_delete_shop_with_nonexistent_shop_id(self, shop_service):
         invalid_shop_id = 99999
         response = shop_service.delete_shop(shop_id=invalid_shop_id)
@@ -72,7 +72,7 @@ class TestDeleteShop:
 
 
     # C30
-    @pytest.mark.negative # id no numérico
+    @pytest.mark.negative 
     def test_delete_shop_with_non_numerical_id(self, shop_service):
         non_numerical_id = "abc"
         response = shop_service.delete_shop(shop_id=non_numerical_id)
