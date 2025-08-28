@@ -13,7 +13,7 @@ _next_shop_id = 1
 router = APIRouter()
 
 
-
+# Fue necesario poner este endpoint (GET /movies/search) arriba del todo para que funcionase:
 
 # Obtener Movie por name, gender y/o director (no por Shop)
 @router.get("/movies/search", response_model=List[Movie], status_code=status.HTTP_200_OK)
@@ -72,14 +72,26 @@ def read_shop_by_id(shop_id : int):
   return shops[shop_id]
 
 
-# Crear shop nuevo
+# Crear shop nuevo CON VALIDACIONES
 @router.post("/shops", response_model=Shop, status_code=status.HTTP_201_CREATED)
-def create_shop(shop : ShopRequestCreate):
-  global _next_shop_id
-  new_shop = Shop(id = _next_shop_id, **shop.model_dump(), movies=[]) # Pusimos una lista de movies vacia para que no de error y asi no modificar el dto
-  shops[_next_shop_id] = new_shop
-  _next_shop_id += 1 # Actualizamos contador al final.
-  return new_shop
+def create_shop(shop: ShopRequestCreate):
+    global _next_shop_id
+
+    # Validaciones de campos obligatorios
+    if not shop.address or shop.address.strip() == "": # chequeo empty
+        raise HTTPException(status_code=422, detail=["Address is required"])
+    if not shop.manager or shop.manager.strip() == "":
+        raise HTTPException(status_code=422, detail=["Manager is required"])
+
+    # Crear shop
+    new_shop = Shop(
+        id=_next_shop_id,
+        **shop.model_dump(),
+        movies=[]  # lista vacía para evitar errores
+    )
+    shops[_next_shop_id] = new_shop
+    _next_shop_id += 1  # actualizar contador
+    return new_shop
 
 
 # Actualizar shop por id
@@ -87,6 +99,12 @@ def create_shop(shop : ShopRequestCreate):
 def update_shop(shop_id : int, new_shop : ShopRequestUpdate):
   if shop_id not in shops.keys():
       raise HTTPException(status_code=404, detail=[SHOP_NOT_FOUND_MESSAGE])
+
+  # Validaciones de campos obligatorios
+  if not new_shop.address or new_shop.address.strip() == "": 
+    raise HTTPException(status_code=422, detail=["Address is required"])
+  if not new_shop.manager or new_shop.manager.strip() == "":
+    raise HTTPException(status_code=422, detail=["Manager is required"])
 
   # Obtenemos el shop para actualizarlo:
   shop = shops[shop_id]
@@ -121,46 +139,86 @@ def read_all_movies():
   return list(movies.values())
 
 
-# Obtener movie por id
+# Obtener movie por id CON VALIDACIONES NECESARIAS PARA LOS TESTS
 @router.get("/movies/{movie_id}", response_model=Movie, status_code=status.HTTP_200_OK)
-def read_movie_by_id(movie_id : int):
-  if movie_id not in movies.keys():
-      raise HTTPException(status_code=404, detail=[MOVIE_NOT_FOUND_MESSAGE])
-  return movies[movie_id]
+def read_movie_by_id(movie_id: int):  # mantenemos int
+    # validamos que sea positivo
+    if movie_id <= 0:
+        raise HTTPException(status_code=422, detail=["Movie ID must be a positive number"])
+    
+    # validamos existencia
+    if movie_id not in movies.keys():
+        raise HTTPException(status_code=404, detail=[MOVIE_NOT_FOUND_MESSAGE])
+    
+    return movies[movie_id]
 
 
-# Crear movie
+# Crear movie CON VALIDACIONES NECESARIAS PARA LOS TESTS
 @router.post("/shops/{shop_id}/movies", response_model=Movie, status_code=status.HTTP_201_CREATED)
-def create_movie(movie : MovieRequestCreate, shop_id : int):
-  global _next_movie_id
-  # Comprobamos que el shop exista
-  if shop_id not in shops.keys():
-    raise HTTPException(status_code=404, detail=[SHOP_NOT_FOUND_MESSAGE])
-  new_movie = Movie(id=_next_movie_id, shop=shop_id, **movie.model_dump())
-  movies[_next_movie_id] = new_movie
-  # Agregamos la pelicula al shop especificado:
-  shops[shop_id].movies.append(new_movie)
-  _next_movie_id += 1 # Actualizamos contador al final.
-  return new_movie
+def create_movie(movie: MovieRequestCreate, shop_id: int):
+    global _next_movie_id
+    
+    # comprobamos que el shop exista
+    if shop_id not in shops.keys():
+        raise HTTPException(status_code=404, detail=[SHOP_NOT_FOUND_MESSAGE])
+    
+    # validamos los empty y without
+    if not movie.name or movie.name.strip() == "":
+        raise HTTPException(status_code=422, detail=["Movie name is required"])
+    if not movie.director or movie.director.strip() == "":
+        raise HTTPException(status_code=422, detail=["Director is required"])
+    if not movie.genres or len(movie.genres) == 0:
+        raise HTTPException(status_code=422, detail=["Genres are required"])
+    
+    new_movie = Movie(id=_next_movie_id, shop=shop_id, **movie.model_dump())
+    movies[_next_movie_id] = new_movie
+    
+    # Agregamos la pelicula al shop especificado:
+    shops[shop_id].movies.append(new_movie)
+    _next_movie_id += 1  # Actualizamos contador al final.
+    
+    return new_movie
 
 
-# Actualizar movie por id
+# Actualizar movie por id CON VALIDACIONES DE EMPTY Y ID
 @router.put("/movies/{movie_id}", response_model=Movie, status_code=status.HTTP_200_OK)
-def update_movie(movie_id : int, new_movie : MovieRequestUpdate):  
-  if movie_id not in movies.keys():
-    raise HTTPException(status_code=404, detail=[MOVIE_NOT_FOUND_MESSAGE])
-  # Actualizamos la movie:
-  movies[movie_id].name = new_movie.name
-  movies[movie_id].director = new_movie.director
-  movies[movie_id].genres = new_movie.genres
-  # Actualizamos la movie en el shop en donde se encuentre:
-  shop_id = movies[movie_id].shop
-  for movie in shops[shop_id].movies:
-    if movie.id == movie_id:
-      movie.name = new_movie.name
-      movie.director = new_movie.director
-      movie.genres = new_movie.genres    
-  return movies[movie_id]
+def update_movie(movie_id: str, new_movie: MovieRequestUpdate):
+    # Validar que movie_id no esté vacío
+    if movie_id.strip() == "":
+        raise HTTPException(status_code=422, detail=["movie_id is required"])
+    
+    # Validar que sea numérico:
+    try:
+        movie_id_int = int(movie_id)
+    except ValueError:
+        raise HTTPException(status_code=422, detail=["movie_id must be numeric"])
+    
+    # Validar que exista:
+    if movie_id_int not in movies:
+        raise HTTPException(status_code=404, detail=[MOVIE_NOT_FOUND_MESSAGE])
+
+    # Validaciones de campos obligatorios:
+    if not new_movie.name or new_movie.name.strip() == "":
+        raise HTTPException(status_code=422, detail=["Movie name is required"])
+    if not new_movie.director or new_movie.director.strip() == "":
+        raise HTTPException(status_code=422, detail=["Director is required"])
+    if not new_movie.genres or len(new_movie.genres) == 0:
+        raise HTTPException(status_code=422, detail=["Genres are required"])
+
+    # Actualizamos la movie
+    movies[movie_id_int].name = new_movie.name
+    movies[movie_id_int].director = new_movie.director
+    movies[movie_id_int].genres = new_movie.genres
+
+    # Actualizamos en el shop correspondiente
+    shop_id = movies[movie_id_int].shop
+    for movie in shops[shop_id].movies:
+        if movie.id == movie_id_int:
+            movie.name = new_movie.name
+            movie.director = new_movie.director
+            movie.genres = new_movie.genres
+
+    return movies[movie_id_int]
 
 
 # Eliminar movie
