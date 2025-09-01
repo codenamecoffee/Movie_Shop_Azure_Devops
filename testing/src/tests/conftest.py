@@ -19,13 +19,16 @@ def movie_service():
 def shop_service():
     return ShopService(base_url=BASE_URL)
 
+import pytest
+from src.models.requests.shop.add_shop_model import AddShopModel
+
 @pytest.fixture
 def created_shop(shop_service):
-    shop_data = {
-        "address": "Test Street 123",
-        "manager": "Test Manager"
-    }
-    response = shop_service.create_shop(shop_data=shop_data)
+    shop_model = AddShopModel(
+        address="Test Street 123",
+        manager="Test Manager"
+    )
+    response = shop_service.create_shop(shop=shop_model, response_type=dict)
     shop = response.data
 
     assert response.status == 201, f"Error al crear shop: {response.data}"
@@ -96,8 +99,16 @@ def sample_movie_data():
 
 
 @pytest.fixture
+def sample_shop_model():
+    """Modelo de ejemplo para crear shops"""
+    return AddShopModel(
+        address="Main Street 456",
+        manager="John Doe"
+    )
+
+@pytest.fixture
 def sample_shop_data():
-    """Datos de ejemplo para crear shops"""
+    """Datos de ejemplo para crear shops (como dict)"""
     return {
         "address": "Main Street 456",
         "manager": "John Doe"

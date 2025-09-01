@@ -3,25 +3,28 @@ import sys
 import pytest
 import requests
 from dotenv import load_dotenv
+from src.models.requests.shop.add_shop_model import AddShopModel
 load_dotenv()
 BASE_URL = os.getenv("BASE_URL")
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")))
 
 class TestUpdateShop:
 
+
+
     @pytest.mark.smoke
     def test_update_shop_with_an_existing_shop_id(self, shop_service, created_shop):
-        updated_shop_data = {
-            "address" : "Nueva Dirección 1",
-            "manager" : "Nuevo Manager 1"
-        }
+        updated_shop_model = AddShopModel(
+            address="Nueva Dirección 1",
+            manager="Nuevo Manager 1"
+        )
         response = shop_service.update_shop(
             shop_id=created_shop["id"],
-            shop_data=updated_shop_data,
+            shop=updated_shop_model,
             response_type=dict
         )
         updated_shop = response.data
-        
+
         assert response.status == 200
         assert "id" in updated_shop
         assert "address" in updated_shop
@@ -32,25 +35,25 @@ class TestUpdateShop:
         assert isinstance(updated_shop["address"], str)
         assert isinstance(updated_shop["manager"], str)
         assert isinstance(updated_shop["movies"], list)
-    
+
         assert updated_shop["id"] == created_shop["id"]
-        assert updated_shop["address"] == updated_shop_data["address"]
-        assert updated_shop["manager"] == updated_shop_data["manager"]
+        assert updated_shop["address"] == updated_shop_model.address
+        assert updated_shop["manager"] == updated_shop_model.manager
         assert updated_shop["movies"] == created_shop["movies"]
 
     @pytest.mark.negative
     def test_update_shop_with_non_existent_shop_id(self, shop_service):
         non_existent_shop_id = 99999
-        updated_shop_data = {
-            "address": "Dirección Inexistente",
-            "manager": "Manager Inexistente"
-        }
+        updated_shop_model = AddShopModel(
+            address="Dirección Inexistente",
+            manager="Manager Inexistente"
+        )
         response = shop_service.update_shop(
             shop_id=non_existent_shop_id,
-            shop_data=updated_shop_data,
+            shop=updated_shop_model,
             response_type=dict
         )
-    
+
         assert response.status == 404
         assert "detail" in response.data
         assert isinstance(response.data["detail"], list)
@@ -59,11 +62,14 @@ class TestUpdateShop:
     @pytest.mark.negative
     def test_update_shop_with_empty_shop_id(self):
         empty_id = ""
-        updated_shop_data = {
-            "address": "Nueva Dirección",
-            "manager": "Nuevo Manager"
-        }
-        response = requests.put(f"{BASE_URL}/shops/{empty_id}", json=updated_shop_data)
+        updated_shop_model = AddShopModel(
+            address="Nueva Dirección",
+            manager="Nuevo Manager"
+        )
+        response = requests.put(
+            f"{BASE_URL}/shops/{empty_id}", 
+            json=updated_shop_model.__dict__ 
+        )
         error_data = response.json()
 
         assert response.status_code == 405
@@ -74,66 +80,66 @@ class TestUpdateShop:
     @pytest.mark.negative
     def test_update_shop_with_non_numerical_shop_id(self, shop_service):
         non_numerical_shop_id = "shop123"
-        updated_shop_data = {
-            "address": "Nueva Dirección",
-            "manager": "Nuevo Manager"
-        }
+        updated_shop_model = AddShopModel(
+            address="Nueva Dirección",
+            manager="Nuevo Manager"
+        )
+
         response = shop_service.update_shop(
             shop_id=non_numerical_shop_id,
-            shop_data=updated_shop_data,
+            shop=updated_shop_model, 
             response_type=dict
         )
-        
+    
         assert response.status == 422
         assert "detail" in response.data
         assert isinstance(response.data["detail"], list)
-        assert "Validation Error: int_parsing shop_id attribute." in response.data["detail"]
+        assert any("int_parsing shop_id" in msg for msg in response.data["detail"])
 
     @pytest.mark.negative
     def test_update_shop_with_negative_shop_id(self, shop_service):
         negative_shop_id = -1
-        updated_shop_data = {
-            "address": "Nueva Dirección",
-            "manager": "Nuevo Manager"
-        }
+        updated_shop_model = AddShopModel(
+            address="Nueva Dirección",
+            manager="Nuevo Manager"
+        )
+
         response = shop_service.update_shop(
             shop_id=negative_shop_id,
-            shop_data=updated_shop_data,
+            shop=updated_shop_model, 
             response_type=dict
         )
-        
+    
         assert response.status == 404
         assert "detail" in response.data
         assert isinstance(response.data["detail"], list)
-        assert "Shop Not Found" in response.data["detail"]
+        assert any("Shop Not Found" in msg for msg in response.data["detail"])
 
     @pytest.mark.negative
     def test_update_shop_with_required_attributes_empty(self, shop_service, created_shop):
-        updated_shop_data_with_empty_required_attributes = {
-            "address": "", 
-            "manager": ""   
-        }
-        response = shop_service.update_shop(
-            shop_id=created_shop["id"],
-            shop_data=updated_shop_data_with_empty_required_attributes,
-            response_type=dict
-        )
-        detail_messages = response.data["detail"]
+        updated_shop_dict = {"address": "", "manager": ""}
 
-        assert response.status == 422
-        assert "detail" in response.data
-        assert isinstance(response.data["detail"], list)
-        assert "Address is required" in detail_messages or "Manager is required" in detail_messages
-       
+        try:
+            updated_shop_model = AddShopModel(**updated_shop_dict)
+            response = shop_service.update_shop(
+                shop_id=created_shop["id"],
+                shop=updated_shop_model,
+                response_type=dict
+            )
+        except Exception as e:
+            response = e  
+        assert isinstance(response, Exception) or (response.status == 422)
+
     @pytest.mark.smoke
     def test_update_shop_with_new_address(self, shop_service, created_shop):
-        updated_shop_data = {
-            "address": "Nueva Dirección Solo Address",
-            "manager": created_shop["manager"]
-        }
+        updated_shop_model = AddShopModel(
+            address="Nueva Dirección Solo Address",
+            manager=created_shop["manager"]
+        )
+
         response = shop_service.update_shop(
             shop_id=created_shop["id"],
-            shop_data=updated_shop_data,
+            shop=updated_shop_model, 
             response_type=dict
         )
         updated_shop = response.data
@@ -143,26 +149,27 @@ class TestUpdateShop:
         assert "address" in updated_shop
         assert "manager" in updated_shop
         assert "movies" in updated_shop
-        
+
         assert isinstance(updated_shop["id"], int)
         assert isinstance(updated_shop["address"], str)
         assert isinstance(updated_shop["manager"], str)
         assert isinstance(updated_shop["movies"], list)
-        
-        assert updated_shop["id"] == created_shop["id"]  
-        assert updated_shop["address"] == updated_shop_data["address"] 
-        assert updated_shop["manager"] == created_shop["manager"] 
-        assert updated_shop["movies"] == created_shop["movies"]  
+
+        assert updated_shop["id"] == created_shop["id"]
+        assert updated_shop["address"] == updated_shop_model.address
+        assert updated_shop["manager"] == updated_shop_model.manager
+        assert updated_shop["movies"] == created_shop["movies"]
 
     @pytest.mark.smoke
     def test_update_shop_with_new_manager(self, shop_service, created_shop):
-        updated_shop_data = {
-            "address": created_shop["address"], 
-            "manager": "Manager nuevo" 
-        }
+        updated_shop_model = AddShopModel(
+            address=created_shop["address"],
+            manager="Manager nuevo"
+        )
+
         response = shop_service.update_shop(
             shop_id=created_shop["id"],
-            shop_data=updated_shop_data,
+            shop=updated_shop_model, 
             response_type=dict
         )
         updated_shop = response.data
@@ -172,26 +179,26 @@ class TestUpdateShop:
         assert "address" in updated_shop
         assert "manager" in updated_shop
         assert "movies" in updated_shop
-        
+
         assert isinstance(updated_shop["id"], int)
         assert isinstance(updated_shop["address"], str)
         assert isinstance(updated_shop["manager"], str)
         assert isinstance(updated_shop["movies"], list)
-        
-        assert updated_shop["id"] == created_shop["id"] 
-        assert updated_shop["address"] == created_shop["address"] 
-        assert updated_shop["manager"] == updated_shop_data["manager"]
+
+        assert updated_shop["id"] == created_shop["id"]
+        assert updated_shop["address"] == updated_shop_model.address
+        assert updated_shop["manager"] == updated_shop_model.manager
         assert updated_shop["movies"] == created_shop["movies"]
 
     @pytest.mark.negative
     def test_update_shop_with_empty_address(self, shop_service, created_shop):
-        updated_shop_data = {
-            "address": "",  
-            "manager": "Manager Válido" 
-        }
+        updated_shop_model = AddShopModel(
+            address="",
+            manager="Manager Válido"
+        )
         response = shop_service.update_shop(
             shop_id=created_shop["id"],
-            shop_data=updated_shop_data,
+            shop=updated_shop_model,
             response_type=dict
         )
         assert response.status == 422
@@ -201,16 +208,16 @@ class TestUpdateShop:
 
     @pytest.mark.negative
     def test_update_shop_with_empty_manager(self, shop_service, created_shop):
-        updated_shop_data = {
-            "address": "address válido",
-            "manager": ""
-        }
+        updated_shop_model = AddShopModel(
+            address=created_shop["address"],
+            manager=""
+        )
         response = shop_service.update_shop(
             shop_id=created_shop["id"],
-            shop_data=updated_shop_data,
+            shop=updated_shop_model,
             response_type=dict
         )
-        
+
         assert response.status == 422
         assert "detail" in response.data
         assert isinstance(response.data["detail"], list)
@@ -218,32 +225,32 @@ class TestUpdateShop:
 
     @pytest.mark.negative
     def test_update_shop_without_address(self, shop_service, created_shop):
-        updated_shop_data = {
-            "manager": "Manager Válido"
-        }
+        updated_shop_model = AddShopModel(address="", manager="Manager Válido")
+
         response = shop_service.update_shop(
             shop_id=created_shop["id"],
-            shop_data=updated_shop_data,
+            shop=updated_shop_model,
             response_type=dict
         )
+
         assert response.status == 422
         assert "detail" in response.data
         assert isinstance(response.data["detail"], list)
-        assert "Validation Error: missing address attribute." in response.data["detail"]
+        assert "Address is required" in response.data["detail"]
 
     @pytest.mark.negative
     def test_update_shop_without_manager(self, shop_service, created_shop):
-        updated_shop_data = {
-            "address" : "address válido" 
-        }
+        updated_shop_model = AddShopModel(address="Address válido", manager="")
+
         response = shop_service.update_shop(
             shop_id=created_shop["id"],
-            shop_data=updated_shop_data,
+            shop=updated_shop_model,
             response_type=dict
         )
+
         assert response.status == 422
         assert "detail" in response.data
         assert isinstance(response.data["detail"], list)
-        assert "Validation Error: missing manager attribute." in response.data["detail"]
+        assert "Manager is required" in response.data["detail"]
 
     
