@@ -1,6 +1,7 @@
 from typing import Type
 from src.base.service_base import ServiceBase
 from src.models.responses.base.response import T, Response
+from src.models.requests.movie.movie_search_criteria import MovieSearchCriteria
 
 
 class MovieService(ServiceBase):
@@ -67,41 +68,33 @@ class MovieService(ServiceBase):
         url = f"{self.base_url}/movies/{movie_id}/rent-movie"
         return self.put(
             url,
-            data=None,  # no necesitamos enviar body
             config=config,
             response_model=response_type
     )
 
-    # devuelve pelicula previamente alquilada
     def return_movie(self, movie_id: int, response_type: Type[T] = None, config: dict | None = None) -> Response[T]:
         config = config or self.default_config
         url = f"{self.base_url}/movies/{movie_id}/return-movie"
         return self.put(
             url,
-            data=None,  # no enviamos body
             config=config,
             response_model=response_type
         )
 
-    # Necesario en test_search_movies.py
-    def search_movies(self, name: str = None, director: str = None, genres: list = None, response_type: Type[T] = None, config: dict | None = None) -> Response[T]:
+    def search_movies(self, criteria: MovieSearchCriteria, response_type: Type[T] = None, config: dict | None = None) -> Response[T]:
         config = config or self.default_config
-        
-        # Construir parámetros de query string:
         params = {}
-        if name:
-            params['name'] = name
-        if director:
-            params['director'] = director
-        if genres:
-            # Para múltiples géneros, FastAPI espera que se repita el parámetro
-            # Esto será manejado automáticamente por requests
-            params['genres'] = genres
-            
+        if criteria.name:
+            params['name'] = criteria.name
+        if criteria.director:
+            params['director'] = criteria.director
+        if criteria.genres:
+            params['genres'] = criteria.genres
+
         url = f"{self.base_url}/movies/search"
         return self.get(
             url,
-            params=params,  # Enviamos como query parameters
+            params=params,
             config=config,
             response_model=response_type
         )

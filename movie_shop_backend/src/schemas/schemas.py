@@ -1,16 +1,15 @@
 from typing import List, Optional
 from pydantic import BaseModel
 
-# Modelo 
+ 
 class Movie(BaseModel):
     id: int
     name: str
     director: str
-    genres: List[str] # pasamos todos los parametros x lower después. 
+    genres: List[str]
     shop : int
-    rent: bool = False # booleano predeterminado false.
+    rent: bool = False
 
-# DTO(s)
 class MovieRequestCreate(BaseModel):
     name: str
     director: str
@@ -21,15 +20,12 @@ class MovieRequestUpdate(BaseModel):
     director: str
     genres: List[str]
     
-
-# Modelo
 class Shop(BaseModel):
     id: int
     address: str
     manager: str
     movies: List[Movie]
 
-# DTO(s)
 class ShopRequestCreate(BaseModel):
     address: str
     manager: str

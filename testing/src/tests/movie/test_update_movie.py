@@ -4,9 +4,8 @@ import pytest
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")))
 from src.models.responses.base.response import Response
 
-class TestUpdateMovie:  # Faltan: C39, C83, C41 y C42
+class TestUpdateMovie:  
 
-    # C38 
     @pytest.mark.smoke
     def test_update_movie_with_an_existing_movie_id(self, movie_service, created_movie):
         updated_data = {
@@ -22,8 +21,6 @@ class TestUpdateMovie:  # Faltan: C39, C83, C41 y C42
         assert movie["director"] == updated_data["director"]
         assert movie["genres"] == updated_data["genres"]
 
-
-    # C60
     @pytest.mark.negative
     def test_update_movie_with_empty_name(self, movie_service, created_movie):
         movie_data = {
@@ -34,8 +31,6 @@ class TestUpdateMovie:  # Faltan: C39, C83, C41 y C42
         response = movie_service.update_movie(created_movie["id"], movie_data)
         assert response.status == 422
 
-
-    # C61
     @pytest.mark.negative
     def test_update_movie_with_empty_director(self, movie_service, created_movie):
         movie_data = {
@@ -46,8 +41,6 @@ class TestUpdateMovie:  # Faltan: C39, C83, C41 y C42
         response = movie_service.update_movie(created_movie["id"], movie_data)
         assert response.status == 422
 
-
-    # C59
     @pytest.mark.negative
     def test_update_movie_with_empty_genres(self, movie_service, created_movie):
         movie_data = {
@@ -58,41 +51,33 @@ class TestUpdateMovie:  # Faltan: C39, C83, C41 y C42
         response = movie_service.update_movie(created_movie["id"], movie_data)
         assert response.status == 422
 
-
-    # C84
     @pytest.mark.negative
     def test_update_movie_without_name(self, movie_service, created_movie):
         movie_data = {
             "director": created_movie["director"],
             "genres": created_movie["genres"]
-        }  #eliminamos el campo name
+        }
         response = movie_service.update_movie(created_movie["id"], movie_data)
         assert response.status == 422
 
-
-    # C85
     @pytest.mark.negative
     def test_update_movie_without_director(self, movie_service, created_movie):
         movie_data = {
             "name": created_movie["name"],
             "genres": created_movie["genres"]
-        }  # eliminamos el campo director
+        }
         response = movie_service.update_movie(created_movie["id"], movie_data)
         assert response.status == 422
 
-
-    # C82
     @pytest.mark.negative
     def test_update_movie_without_genres(self, movie_service, created_movie):
         movie_data = {
             "name": created_movie["name"],
             "director": created_movie["director"]
-        }  # eliminamos el campo genres
+        }
         response = movie_service.update_movie(created_movie["id"], movie_data)
         assert response.status == 422
 
-
-    # C40 (Decía C83 antes, pero como dice empty_movie_id supuse que era el C40)
     @pytest.mark.negative
     def test_update_movie_with_empty_movie_id(self, movie_service, sample_movie_data):
         invalid_movie_id = None
