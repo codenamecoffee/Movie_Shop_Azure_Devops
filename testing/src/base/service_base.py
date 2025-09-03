@@ -13,16 +13,6 @@ T = TypeVar("T", bound=BaseModel | List[BaseModel])
 
 
 class ServiceBase(Session):
-    """
-    Base class for API services. 
-    Should be inherited by specific service implementations.
-
-    Example:
-        class UserService(ServiceBase):
-            def __init__(self):
-                super().__init__("users", base_url="https://api.example.com")
-    """
-
     def __init__(
         self, path: str = "", base_url: str = ""
     ) -> None:
@@ -143,10 +133,15 @@ class ServiceBase(Session):
 
         try:
             raw_data = response.json()
-            if response_model and isinstance(raw_data, list):
-                model = get_args(response_model)[0]
+            if response_model and isinstance(raw_data, list) and hasattr(response_model, "model_validate"):
+                args = get_args(response_model)
+                if args:
+                    model = args[0]  
+                else:
+                    model = response_model  
+
                 parsed_data = [model.model_validate(item) for item in raw_data]
-            elif response_model:
+            elif response_model and hasattr(response_model, "model_validate"):
                 parsed_data = response_model.model_validate(raw_data)
             else:
                 parsed_data = raw_data

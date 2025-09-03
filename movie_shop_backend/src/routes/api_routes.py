@@ -14,7 +14,6 @@ router = APIRouter()
 
 
 
-
 # Obtener Movie por name, gender y/o director (no por Shop)
 @router.get("/movies/search", response_model=List[Movie], status_code=status.HTTP_200_OK)
 def search_movies(
@@ -22,34 +21,23 @@ def search_movies(
     director: Optional[str] = Query(None),
     genres: Optional[List[str]] = Query(None)
 ):
-    # Parte de todas las movies:
     result = list(movies.values())
 
-    # La lista de movies se irá reduciendo en función de si se ejecutan los if's o no:
-
-    if name: # Si se especificó un nombre para filtrar.
+    if name:
         result = [movie for movie in result if movie.name.lower() == name.lower()]
 
-    if director: # Si se especificó un director para filtrar.
+    if director:
         result = [movie for movie in result if movie.director.lower() == director.lower()]
 
-    if genres: # Si se especificaron uno o varios géneros para filtrar.
-        
-        # result = [movie for movie in result  # para cada movie en result, buscar
-        #           if any(movie_gender.lower() in  # si algún género (en minúscula) se encuentra en,
-        #           [movie_gender.lower() for movie_gender in movie.gender] # la lista de géneros de la movie,
-        #           for movie_gender in gender)] # para cada género en la lista de géneros de la movie.
-        
-
-        # Usando un for 'largo' en lugar de comprehention:
-        filtered_result = []  # Para no modificar result mientras la recorremos.
+    if genres:
+        filtered_result = [] 
 
         for movie in result:
           genre_list = [movie_gender.lower() for movie_gender in movie.genres]
           if all(movie_gender.lower() in genre_list for movie_gender in genres):
               filtered_result.append(movie)
               
-        result = filtered_result  # Se guardan las movies que tengan TODOS los géneros especificados.
+        result = filtered_result
 
     return result
 
@@ -74,12 +62,21 @@ def read_shop_by_id(shop_id : int):
 
 # Crear shop nuevo
 @router.post("/shops", response_model=Shop, status_code=status.HTTP_201_CREATED)
-def create_shop(shop : ShopRequestCreate):
-  global _next_shop_id
-  new_shop = Shop(id = _next_shop_id, **shop.model_dump(), movies=[]) # Pusimos una lista de movies vacia para que no de error y asi no modificar el dto
-  shops[_next_shop_id] = new_shop
-  _next_shop_id += 1 # Actualizamos contador al final.
-  return new_shop
+def create_shop(shop: ShopRequestCreate):
+    global _next_shop_id
+
+    if not shop.address or shop.address.strip() == "":
+        raise HTTPException(status_code=422, detail=["Address is required"])
+    if not shop.manager or shop.manager.strip() == "":
+        raise HTTPException(status_code=422, detail=["Manager is required"])
+    new_shop = Shop(
+        id=_next_shop_id,
+        **shop.model_dump(),
+        movies=[] 
+    )
+    shops[_next_shop_id] = new_shop
+    _next_shop_id += 1 
+    return new_shop
 
 
 # Actualizar shop por id
@@ -88,10 +85,13 @@ def update_shop(shop_id : int, new_shop : ShopRequestUpdate):
   if shop_id not in shops.keys():
       raise HTTPException(status_code=404, detail=[SHOP_NOT_FOUND_MESSAGE])
 
-  # Obtenemos el shop para actualizarlo:
+  if not new_shop.address or new_shop.address.strip() == "": 
+    raise HTTPException(status_code=422, detail=["Address is required"])
+  if not new_shop.manager or new_shop.manager.strip() == "":
+    raise HTTPException(status_code=422, detail=["Manager is required"])
+
   shop = shops[shop_id]
 
-  # Lo actualizamos
   shop.address = new_shop.address
   shop.manager = new_shop.manager
   return shop
@@ -103,13 +103,10 @@ def delete_shop(shop_id : int):
   if shop_id not in shops.keys():
       raise HTTPException(status_code=404, detail=[SHOP_NOT_FOUND_MESSAGE])
   
-  # Borramos el shop del diccionario shops:
   removed_shop = shops.pop(shop_id)
 
-  # Por cada movie perteneciente al shop
   for movie in removed_shop.movies:
-    _ = movies.pop(movie.id) # Eliminamos las movies del diccionario movies
-
+    _ = movies.pop(movie.id)
 
 
 ######## Crud Operations - Movies
@@ -121,46 +118,76 @@ def read_all_movies():
   return list(movies.values())
 
 
-# Obtener movie por id
+# Obtener movie por id CON VALIDACIONES NECESARIAS PARA LOS TESTS
 @router.get("/movies/{movie_id}", response_model=Movie, status_code=status.HTTP_200_OK)
-def read_movie_by_id(movie_id : int):
-  if movie_id not in movies.keys():
-      raise HTTPException(status_code=404, detail=[MOVIE_NOT_FOUND_MESSAGE])
-  return movies[movie_id]
+def read_movie_by_id(movie_id: int): 
+    if movie_id <= 0:
+        raise HTTPException(status_code=422, detail=["Movie ID must be a positive number"])
+    
+    if movie_id not in movies.keys():
+        raise HTTPException(status_code=404, detail=[MOVIE_NOT_FOUND_MESSAGE])
+    
+    return movies[movie_id]
 
 
-# Crear movie
+# Crear movie CON VALIDACIONES NECESARIAS PARA LOS TESTS
 @router.post("/shops/{shop_id}/movies", response_model=Movie, status_code=status.HTTP_201_CREATED)
-def create_movie(movie : MovieRequestCreate, shop_id : int):
-  global _next_movie_id
-  # Comprobamos que el shop exista
-  if shop_id not in shops.keys():
-    raise HTTPException(status_code=404, detail=[SHOP_NOT_FOUND_MESSAGE])
-  new_movie = Movie(id=_next_movie_id, shop=shop_id, **movie.model_dump())
-  movies[_next_movie_id] = new_movie
-  # Agregamos la pelicula al shop especificado:
-  shops[shop_id].movies.append(new_movie)
-  _next_movie_id += 1 # Actualizamos contador al final.
-  return new_movie
+def create_movie(movie: MovieRequestCreate, shop_id: int):
+    global _next_movie_id
+    
+    if shop_id not in shops.keys():
+        raise HTTPException(status_code=404, detail=[SHOP_NOT_FOUND_MESSAGE])
+
+    if not movie.name or movie.name.strip() == "":
+        raise HTTPException(status_code=422, detail=["Movie name is required"])
+    if not movie.director or movie.director.strip() == "":
+        raise HTTPException(status_code=422, detail=["Director is required"])
+    if not movie.genres or len(movie.genres) == 0:
+        raise HTTPException(status_code=422, detail=["Genres are required"])
+    
+    new_movie = Movie(id=_next_movie_id, shop=shop_id, **movie.model_dump())
+    movies[_next_movie_id] = new_movie
+    
+ 
+    shops[shop_id].movies.append(new_movie)
+    _next_movie_id += 1 
+    
+    return new_movie
 
 
 # Actualizar movie por id
 @router.put("/movies/{movie_id}", response_model=Movie, status_code=status.HTTP_200_OK)
-def update_movie(movie_id : int, new_movie : MovieRequestUpdate):  
-  if movie_id not in movies.keys():
-    raise HTTPException(status_code=404, detail=[MOVIE_NOT_FOUND_MESSAGE])
-  # Actualizamos la movie:
-  movies[movie_id].name = new_movie.name
-  movies[movie_id].director = new_movie.director
-  movies[movie_id].genres = new_movie.genres
-  # Actualizamos la movie en el shop en donde se encuentre:
-  shop_id = movies[movie_id].shop
-  for movie in shops[shop_id].movies:
-    if movie.id == movie_id:
-      movie.name = new_movie.name
-      movie.director = new_movie.director
-      movie.genres = new_movie.genres    
-  return movies[movie_id]
+def update_movie(movie_id: str, new_movie: MovieRequestUpdate):
+    if movie_id.strip() == "":
+        raise HTTPException(status_code=422, detail=["movie_id is required"])
+    
+    try:
+        movie_id_int = int(movie_id)
+    except ValueError:
+        raise HTTPException(status_code=422, detail=["movie_id must be numeric"])
+    
+    if movie_id_int not in movies:
+        raise HTTPException(status_code=404, detail=[MOVIE_NOT_FOUND_MESSAGE])
+
+    if not new_movie.name or new_movie.name.strip() == "":
+        raise HTTPException(status_code=422, detail=["Movie name is required"])
+    if not new_movie.director or new_movie.director.strip() == "":
+        raise HTTPException(status_code=422, detail=["Director is required"])
+    if not new_movie.genres or len(new_movie.genres) == 0:
+        raise HTTPException(status_code=422, detail=["Genres are required"])
+
+    movies[movie_id_int].name = new_movie.name
+    movies[movie_id_int].director = new_movie.director
+    movies[movie_id_int].genres = new_movie.genres
+
+    shop_id = movies[movie_id_int].shop
+    for movie in shops[shop_id].movies:
+        if movie.id == movie_id_int:
+            movie.name = new_movie.name
+            movie.director = new_movie.director
+            movie.genres = new_movie.genres
+
+    return movies[movie_id_int]
 
 
 # Eliminar movie
@@ -169,10 +196,8 @@ def delete_movie(movie_id: int):
     if movie_id not in movies:
         raise HTTPException(status_code=404, detail=[MOVIE_NOT_FOUND_MESSAGE])
     
-    # Guardamos y borramos la movie globalmente:
     movie_to_delete = movies.pop(movie_id)
 
-    # Borramos la movie del shop correspondiente:
     shop_id = movie_to_delete.shop
     _ = shops[shop_id].movies.remove(movie_to_delete)
     
@@ -196,7 +221,6 @@ def get_available_movies_by_shop(shop_id: int):
    if shop_id not in shops.keys():
       raise HTTPException(status_code=404, detail=[SHOP_NOT_FOUND_MESSAGE])
    
-   # Usamos list comprehention para generar una list[Movie] específica:
    return [movie for movie in shops[shop_id].movies if not movie.rent]
 
 
@@ -215,7 +239,6 @@ def rent_movie(movie_id: int):
 @router.patch("/movies/{movie_id}/change-shop", response_model=Shop, status_code=status.HTTP_200_OK) 
 def change_shop_movie(movie_id: int, change_shop: ChangeShopRequest):
     
-    # Obtenemos el id del shop a través del dto (No desde la URL)
     shop_id = change_shop.shop_id
 
     if shop_id not in shops.keys():
@@ -225,19 +248,16 @@ def change_shop_movie(movie_id: int, change_shop: ChangeShopRequest):
 
     movie_to_change = movies[movie_id]
 
-    # Borramos la movie del shop donde estaba antes:
     shops[movie_to_change.shop].movies.remove(movie_to_change)
 
-    # Cambiamos el id del shop asociado a la movie:
     movie_to_change.shop = shop_id
 
-    # Agregamos la movie al nuevo shop:
     shops[shop_id].movies.append(movie_to_change)
 
     return shops[shop_id]
 
 
-# Devolver una movie (Es decir, el que alquiló, la devuelve):
+# Devolver una movie:
 @router.put("/movies/{movie_id}/return-movie", response_model=Movie, status_code=status.HTTP_200_OK)
 def return_movie(movie_id: int):
   if movie_id not in movies.keys():
