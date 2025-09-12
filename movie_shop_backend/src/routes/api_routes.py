@@ -13,6 +13,12 @@ _next_shop_id = 1
 router = APIRouter()
 
 
+# # Endpoint para 'Health Probes' en Azure Container Apps
+@router.get("/health", status_code=status.HTTP_200_OK)
+def health_check():
+    return {"status": "ok"}
+
+
 # Fue necesario poner este endpoint (GET /movies/search) arriba del todo para que funcionase:
 
 # Obtener Movie por name, gender y/o director (no por Shop)
@@ -72,7 +78,7 @@ def read_shop_by_id(shop_id : int):
   return shops[shop_id]
 
 
-# Crear shop nuevo CON VALIDACIONES
+# Crear shop nuevo
 @router.post("/shops", response_model=Shop, status_code=status.HTTP_201_CREATED)
 def create_shop(shop: ShopRequestCreate):
     global _next_shop_id
@@ -139,7 +145,7 @@ def read_all_movies():
   return list(movies.values())
 
 
-# Obtener movie por id CON VALIDACIONES NECESARIAS PARA LOS TESTS
+# Obtener movie por id
 @router.get("/movies/{movie_id}", response_model=Movie, status_code=status.HTTP_200_OK)
 def read_movie_by_id(movie_id: int):  # mantenemos int
     # validamos que sea positivo
@@ -153,7 +159,7 @@ def read_movie_by_id(movie_id: int):  # mantenemos int
     return movies[movie_id]
 
 
-# Crear movie CON VALIDACIONES NECESARIAS PARA LOS TESTS
+# Crear movie
 @router.post("/shops/{shop_id}/movies", response_model=Movie, status_code=status.HTTP_201_CREATED)
 def create_movie(movie: MovieRequestCreate, shop_id: int):
     global _next_movie_id
@@ -180,7 +186,7 @@ def create_movie(movie: MovieRequestCreate, shop_id: int):
     return new_movie
 
 
-# Actualizar movie por id CON VALIDACIONES DE EMPTY Y ID
+# Actualizar movie por id 
 @router.put("/movies/{movie_id}", response_model=Movie, status_code=status.HTTP_200_OK)
 def update_movie(movie_id: str, new_movie: MovieRequestUpdate):
     # Validar que movie_id no esté vacío
