@@ -41,6 +41,9 @@ ENV PYTHONUNBUFFERED=1
 RUN chown -R appuser:appuser /app
 USER appuser
 
+# Configurar cache de uv en directorio accesible para appuser
+ENV UV_CACHE_DIR=/app/.uv-cache
+
 # Configurar el puerto y comando
 EXPOSE 8000
 
