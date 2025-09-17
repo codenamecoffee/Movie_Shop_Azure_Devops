@@ -30,26 +30,26 @@ stages:
       steps:
         - checkout: self
 
-# # --------------------
-# # 2️⃣ Build Docker Image
-# # --------------------
-# - stage: Build
-#   displayName: 'Build Docker Image'
-#   dependsOn: Checkout
-#   jobs:
-#     - job: BuildJob
-#       pool:
-#         vmImage: 'ubuntu-latest'
-#       container: runner
-#       steps:
-#         - task: Docker@2
-#           displayName: 'Build Docker Image'
-#           inputs:
-#             command: build
-#             containerRegistry: $(serviceConnection)
-#             repository: $(acrName)/$(imageName)
-#             Dockerfile: Dockerfile
-#             tags: latest
+# --------------------
+# 2️⃣ Build Docker Image
+# --------------------
+- stage: Build
+  displayName: 'Build Docker Image'
+  dependsOn: Checkout
+  jobs:
+    - job: BuildJob
+      pool:
+        vmImage: 'ubuntu-latest'
+      container: runner
+      steps:
+        - task: Docker@2
+          displayName: 'Build Docker Image'
+          inputs:
+            command: build
+            containerRegistry: $(serviceConnection)
+            repository: $(acrName)/$(imageName)
+            Dockerfile: Dockerfile.ci
+            tags: latest
 
 # --------------------
 # 3️⃣ Test with Pytest
