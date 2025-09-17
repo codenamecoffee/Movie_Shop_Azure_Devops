@@ -4,7 +4,7 @@ trigger:
     include:
       - main
       - ci-cd
-      
+
 resources:
   containers:
     - container: runner
@@ -30,26 +30,26 @@ stages:
       steps:
         - checkout: self
 
-# --------------------
-# 2️⃣ Build Docker Image
-# --------------------
-- stage: Build
-  displayName: 'Build Docker Image'
-  dependsOn: Checkout
-  jobs:
-    - job: BuildJob
-      pool:
-        vmImage: 'ubuntu-latest'
-      container: runner
-      steps:
-        - task: Docker@2
-          displayName: 'Build Docker Image'
-          inputs:
-            command: build
-            containerRegistry: $(serviceConnection)
-            repository: $(acrName)/$(imageName)
-            Dockerfile: Dockerfile
-            tags: latest
+# # --------------------
+# # 2️⃣ Build Docker Image
+# # --------------------
+# - stage: Build
+#   displayName: 'Build Docker Image'
+#   dependsOn: Checkout
+#   jobs:
+#     - job: BuildJob
+#       pool:
+#         vmImage: 'ubuntu-latest'
+#       container: runner
+#       steps:
+#         - task: Docker@2
+#           displayName: 'Build Docker Image'
+#           inputs:
+#             command: build
+#             containerRegistry: $(serviceConnection)
+#             repository: $(acrName)/$(imageName)
+#             Dockerfile: Dockerfile
+#             tags: latest
 
 # --------------------
 # 3️⃣ Test with Pytest
@@ -73,25 +73,25 @@ stages:
             testResultsFiles: '**/reports/test-results.xml'
             failTaskOnFailedTests: true
 
-# --------------------
-# 4️⃣ Release / Push to ACR
-# --------------------
-- stage: Release
-  displayName: 'Push Image to ACR'
-  dependsOn: Test
-  jobs:
-    - job: PushJob
-      pool:
-        vmImage: 'ubuntu-latest'
-      container: runner
-      steps:
-        - task: Docker@2
-          displayName: 'Push Docker Image'
-          inputs:
-            command: push
-            containerRegistry: $(serviceConnection)
-            repository: $(acrName)/$(imageName)
-            tags: latest
+# # --------------------
+# # 4️⃣ Release / Push to ACR
+# # --------------------
+# - stage: Release
+#   displayName: 'Push Image to ACR'
+#   dependsOn: Test
+#   jobs:
+#     - job: PushJob
+#       pool:
+#         vmImage: 'ubuntu-latest'
+#       container: runner
+#       steps:
+#         - task: Docker@2
+#           displayName: 'Push Docker Image'
+#           inputs:
+#             command: push
+#             containerRegistry: $(serviceConnection)
+#             repository: $(acrName)/$(imageName)
+#             tags: latest
 
 # --------------------
 # 5️⃣ Deploy to Container App
