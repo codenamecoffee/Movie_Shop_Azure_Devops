@@ -3,7 +3,8 @@ trigger:
   branches:
     include:
       - main
-
+      - ci-cd
+      
 resources:
   containers:
     - container: runner
