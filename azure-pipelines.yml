@@ -122,4 +122,4 @@ stages:
                 --name $(containerAppName) \
                 --resource-group $(resourceGroup) \
                 --image $(acrName)/$(imageName):$(imageTag) \
-                --environment $(containerAppName)-env
+                --environment $(containerAppName)
