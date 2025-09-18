@@ -4,6 +4,11 @@ trigger:
     include:
       - main
 
+pr:
+  branches:
+    include:
+      - main
+
 resources:
   containers:
     - container: runner
