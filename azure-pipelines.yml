@@ -13,7 +13,7 @@ resources:
       options: --user 0:0
 
 variables:
-  serviceConnection: sc-school-of-2025-mvd
+  serviceConnection: sc-acr-schoolof
   resourceGroup: SchoolOf        # Tu Resource Group
   containerAppName: movie-shop   # Nombre de la Container App
   acrName: schoolof.azurecr.io   # ACR donde subís la imagen
@@ -57,7 +57,7 @@ stages:
 # --------------------
 - stage: Test
   displayName: 'Run Tests'
-  dependsOn: Checkout  # modificado - Deberia ser 'Build' esto
+  dependsOn: Build 
   jobs:
     - job: TestJob
       pool:
@@ -76,29 +76,29 @@ stages:
 # # --------------------
 # # 4️⃣ Release / Push to ACR
 # # --------------------
-# - stage: Release
-#   displayName: 'Push Image to ACR'
-#   dependsOn: Test
-#   jobs:
-#     - job: PushJob
-#       pool:
-#         vmImage: 'ubuntu-latest'
-#       container: runner
-#       steps:
-#         - task: Docker@2
-#           displayName: 'Push Docker Image'
-#           inputs:
-#             command: push
-#             containerRegistry: $(serviceConnection)
-#             repository: $(acrName)/$(imageName)
-#             tags: $(imageTag)
+- stage: Release
+  displayName: 'Push Image to ACR'
+  dependsOn: Test
+  jobs:
+    - job: PushJob
+      pool:
+        vmImage: 'ubuntu-latest'
+      container: runner
+      steps:
+        - task: Docker@2
+          displayName: 'Push Docker Image'
+          inputs:
+            command: push
+            containerRegistry: $(serviceConnection)
+            repository: $(acrName)/$(imageName)
+            tags: $(imageTag)
 
 # --------------------
 # 5️⃣ Deploy to Container App
 # --------------------
 - stage: Deploy
   displayName: 'Deploy to Container App'
-  dependsOn: Test  #modificado - Deberia ser 'Release' esto
+  dependsOn: Release  
   condition: succeeded()
   jobs:
     - job: DeployJob
