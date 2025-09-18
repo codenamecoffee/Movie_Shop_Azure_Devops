@@ -23,18 +23,16 @@ ENV PATH="/root/.cargo/bin:/root/.local/bin:${PATH}"
 # Usar uv para installar dependencias:
 RUN uv sync --frozen
 
+# Crear directorio para datos persistentes:
+RUN mkdir -p data
+
 # Copiamos los datos del proyecto:
 COPY movie_shop_backend/src ./src
 COPY ./movie_shop_backend/app_state.json ./data/app_state.json
 COPY testing ./testing
 
 # Instalamos las dependencias de testing:
-RUN uv pip install -r testing/requirements.txt
-RUN pip install pytest
-
-
-# Crear directorio para datos persistentes:
-RUN mkdir -p data
+RUN pip install -r testing/requirements.txt
 
 # Copiar archivo de estado directo
 COPY movie_shop_backend/app_state.json data/
