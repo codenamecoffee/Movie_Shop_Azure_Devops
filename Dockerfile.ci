@@ -30,6 +30,8 @@ COPY testing ./testing
 
 # Instalamos las dependencias de testing:
 RUN uv pip install -r testing/requirements.txt
+RUN pip install pytest
+
 
 # Crear directorio para datos persistentes:
 RUN mkdir -p data
