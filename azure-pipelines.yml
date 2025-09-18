@@ -9,6 +9,9 @@ pr:
     include:
       - main
 
+pool:
+  name: "Default"
+
 resources:
   containers:
     - container: runner
