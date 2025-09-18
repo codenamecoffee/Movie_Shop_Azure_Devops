@@ -25,7 +25,7 @@ RUN uv sync --frozen
 
 # Copiamos los datos del proyecto:
 COPY movie_shop_backend/src ./src
-COPY movie_shop_backend/app_state.json .
+COPY ./movie_shop_backend/app_state.json ./data/app_state.json
 COPY testing ./testing
 
 # Instalamos las dependencias de testing:
