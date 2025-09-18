@@ -1,0 +1,125 @@
+# azure-pipelines.yml
+trigger:
+  branches:
+    include:
+      - main
+
+pr:
+  branches:
+    include:
+      - main
+
+resources:
+  containers:
+    - container: runner
+      image: schoolof.azurecr.io/runner:latest
+      endpoint: sc-acr-schoolof
+      options: --user 0:0
+
+variables:
+  serviceConnectionRm: sc-school-of-2025-mvd # Service Connection de RM
+  serviceConnection: sc-acr-schoolof
+  resourceGroup: SchoolOf        # Tu Resource Group
+  containerAppName: school-of-app-env   # Nombre de la Container App
+  acrName: schoolof.azurecr.io   # ACR donde subís la imagen
+  imageName: mg-fg-movie-shop-debugged-api-ci # Nuestra imagen en ACR
+  imageTag: v1.0.0-ci # Tag de la imagen en ACR
+
+stages:
+# --------------------
+# 1️⃣ Checkout
+# --------------------
+- stage: Checkout
+  displayName: 'Checkout code'
+  jobs:
+    - job: CheckoutJob
+      steps:
+        - checkout: self
+
+# --------------------
+# 2️⃣ Build Docker Image
+# --------------------
+- stage: Build
+  displayName: 'Build Docker Image'
+  dependsOn: Checkout
+  jobs:
+    - job: BuildJob
+      pool:
+        vmImage: 'ubuntu-latest'
+      container: runner
+      steps:
+        - task: Docker@2
+          displayName: 'Build Docker Image'
+          inputs:
+            command: build
+            containerRegistry: $(serviceConnection)
+            repository: $(acrName)/$(imageName)
+            Dockerfile: Dockerfile.ci
+            tags: $(imageTag)
+
+# --------------------
+# 3️⃣ Test with Pytest
+# --------------------
+- stage: Test
+  displayName: 'Run Tests'
+  dependsOn: Build 
+  jobs:
+    - job: TestJob
+      pool:
+        vmImage: 'ubuntu-latest'
+      container: runner
+      steps:
+        - script: |
+            docker run --rm $(acrName)/$(imageName):$(imageTag) pytest testing/src --junitxml=reports/test-results.xml
+          displayName: 'Run Pytest in Docker Container'
+        - task: PublishTestResults@2
+          inputs:
+            testResultsFormat: 'JUnit'
+            testResultsFiles: '**/reports/test-results.xml'
+            failTaskOnFailedTests: true
+
+# # --------------------
+# # 4️⃣ Release / Push to ACR
+# # --------------------
+- stage: Release
+  displayName: 'Push Image to ACR'
+  dependsOn: Test
+  jobs:
+    - job: PushJob
+      pool:
+        vmImage: 'ubuntu-latest'
+      container: runner
+      steps:
+        - task: Docker@2
+          displayName: 'Push Docker Image'
+          inputs:
+            command: push
+            containerRegistry: $(serviceConnection)
+            repository: $(acrName)/$(imageName)
+            tags: $(imageTag)
+
+# --------------------
+# 5️⃣ Deploy to Container App
+# --------------------
+- stage: Deploy
+  displayName: 'Deploy to Container App'
+  dependsOn: Release  
+  condition: succeeded()
+  jobs:
+    - job: DeployJob
+      pool:
+        vmImage: 'ubuntu-latest'
+      container: runner
+      steps:
+        - task: AzureCLI@2
+          displayName: 'Deploy Container App'
+          inputs:
+            azureSubscription: $(serviceConnectionRm)
+            scriptType: bash
+            scriptLocation: inlineScript
+            inlineScript: |
+              az containerapp update \
+                --name $(containerAppName) \
+                --resource-group $(resourceGroup) \
+                --image $(acrName)/$(imageName):$(imageTag) \
+                --environment $(containerAppName)
