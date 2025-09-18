@@ -20,7 +20,7 @@ variables:
   serviceConnectionRm: sc-school-of-2025-mvd # Service Connection de RM
   serviceConnection: sc-acr-schoolof
   resourceGroup: SchoolOf        # Tu Resource Group
-  containerAppName: movie-shop   # Nombre de la Container App
+  containerAppName: school-of-app-env   # Nombre de la Container App
   acrName: schoolof.azurecr.io   # ACR donde subís la imagen
   imageName: mg-fg-movie-shop-debugged-api-ci # Nuestra imagen en ACR
   imageTag: v1.0.0-ci # Tag de la imagen en ACR
