@@ -12,6 +12,7 @@ resources:
       options: --user 0:0
 
 variables:
+  serviceConnectionRm: sc-school-of-2025-mvd # Service Connection de RM
   serviceConnection: sc-acr-schoolof
   resourceGroup: SchoolOf        # Tu Resource Group
   containerAppName: movie-shop   # Nombre de la Container App
@@ -108,7 +109,7 @@ stages:
         - task: AzureCLI@2
           displayName: 'Deploy Container App'
           inputs:
-            azureSubscription: $(serviceConnection)
+            azureSubscription: $(serviceConnectionRm)
             scriptType: bash
             scriptLocation: inlineScript
             inlineScript: |
