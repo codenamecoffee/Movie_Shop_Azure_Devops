@@ -47,8 +47,6 @@ stages:
   dependsOn: Checkout
   jobs:
     - job: BuildJob
-      pool:
-        vmImage: 'ubuntu-latest'
       container: runner
       steps:
         - task: Docker@2
@@ -68,8 +66,6 @@ stages:
   dependsOn: Build 
   jobs:
     - job: TestJob
-      pool:
-        vmImage: 'ubuntu-latest'
       container: runner
       steps:
         - script: |
@@ -89,8 +85,6 @@ stages:
   dependsOn: Test
   jobs:
     - job: PushJob
-      pool:
-        vmImage: 'ubuntu-latest'
       container: runner
       steps:
         - task: Docker@2
@@ -110,8 +104,6 @@ stages:
   condition: succeeded()
   jobs:
     - job: DeployJob
-      pool:
-        vmImage: 'ubuntu-latest'
       container: runner
       steps:
         - task: AzureCLI@2
