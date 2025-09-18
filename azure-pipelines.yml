@@ -17,7 +17,8 @@ variables:
   resourceGroup: SchoolOf        # Tu Resource Group
   containerAppName: movie-shop   # Nombre de la Container App
   acrName: schoolof.azurecr.io   # ACR donde subís la imagen
-  imageName: movie-shop
+  imageName: mg-fg-movie-shop-debugged-api-ci # Nuestra imagen en ACR
+  imageTag: v1.0.0-ci # Tag de la imagen en ACR
 
 stages:
 # --------------------
@@ -49,14 +50,14 @@ stages:
             containerRegistry: $(serviceConnection)
             repository: $(acrName)/$(imageName)
             Dockerfile: Dockerfile.ci
-            tags: latest
+            tags: $(imageTag)
 
 # --------------------
 # 3️⃣ Test with Pytest
 # --------------------
 - stage: Test
   displayName: 'Run Tests'
-  dependsOn: Checkout  #modificado
+  dependsOn: Checkout  # modificado - Deberia ser 'Build' esto
   jobs:
     - job: TestJob
       pool:
@@ -64,9 +65,8 @@ stages:
       container: runner
       steps:
         - script: |
-            pip install -r requirements.txt
-            pytest --junitxml=reports/test-results.xml
-          displayName: 'Run Pytest'
+            docker run --rm $(acrName)/$(imageName):$(imageTag) pytest testing/src --junitxml=reports/test-results.xml
+          displayName: 'Run Pytest in Docker Container'
         - task: PublishTestResults@2
           inputs:
             testResultsFormat: 'JUnit'
@@ -91,14 +91,14 @@ stages:
 #             command: push
 #             containerRegistry: $(serviceConnection)
 #             repository: $(acrName)/$(imageName)
-#             tags: latest
+#             tags: $(imageTag)
 
 # --------------------
 # 5️⃣ Deploy to Container App
 # --------------------
 - stage: Deploy
   displayName: 'Deploy to Container App'
-  dependsOn: Test  #modificado
+  dependsOn: Test  #modificado - Deberia ser 'Release' esto
   condition: succeeded()
   jobs:
     - job: DeployJob
@@ -116,5 +116,5 @@ stages:
               az containerapp update \
                 --name $(containerAppName) \
                 --resource-group $(resourceGroup) \
-                --image $(acrName)/$(imageName):latest \
+                --image $(acrName)/$(imageName):$(imageTag) \
                 --environment $(containerAppName)-env
