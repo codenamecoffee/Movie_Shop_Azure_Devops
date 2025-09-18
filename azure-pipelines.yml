@@ -69,7 +69,7 @@ stages:
       container: runner
       steps:
         - script: |
-            docker run --rm $(acrName)/$(imageName):$(imageTag) pytest testing/src --junitxml=reports/test-results.xml
+            docker run --rm $(acrName)/$(imageName):$(imageTag) uv pytest testing/src --junitxml=reports/test-results.xml
           displayName: 'Run Pytest in Docker Container'
         - task: PublishTestResults@2
           inputs:
