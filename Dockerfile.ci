@@ -1,50 +1,51 @@
 FROM python:3.12-slim
 
-# Usuario no-root para seguridad
+# Crea el usuario y grupo no-root para seguridad
 RUN groupadd -r appuser && useradd -r -g appuser appuser
 
-# Establecer directorio de trabajo:
-WORKDIR /app 
-
-# Instalar dependencias del sistema
+# Instala dependencias del sistema como root
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc build-essential curl ca-certificates \
-    && curl -LsSf https://astral.sh/uv/install.sh | sh \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
-# Agregamos los nuevos directorios a la variable de entorno path:
-ENV PATH="/root/.cargo/bin:/root/.local/bin:${PATH}"
+# Establece el directorio de trabajo como root
+WORKDIR /app 
 
-# Cambiar a usuario no-root antes de copiar y instalar dependencias
+# Cambia la propiedad del directorio de trabajo a 'appuser'
 RUN chown -R appuser:appuser /app
+
+# Ahora, cambia al usuario no-root
 USER appuser
 
-# Copiamos los archivos
+# Copia los archivos del proyecto como 'appuser'
 COPY movie_shop_backend/pyproject.toml .
 COPY movie_shop_backend/uv.lock .
 COPY movie_shop_backend/src ./src
 COPY ./movie_shop_backend/app_state.json ./data/app_state.json
 COPY testing ./testing
 
-# Crear directorio para datos persistentes:
+# Crear directorio para datos persistentes (como 'appuser')
 RUN mkdir -p data
 
-# Usar uv para instalar dependencias:
+# Instala 'uv' como 'appuser' para que sea accesible para él
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Agrega la ubicación del binario de 'uv' al PATH de 'appuser'
+ENV PATH="/home/appuser/.cargo/bin:/home/appuser/.local/bin:${PATH}"
+
+# Usa uv para instalar las dependencias de producción
 RUN uv sync --frozen
 
-# Instalar las dependencias de testing:
+# Instala las dependencias de testing (como 'appuser')
 RUN pip install -r testing/requirements.txt
 
-# Configurar variables de entorno en el contenedor:
+# Copia archivos de estado y configura variables de entorno
+COPY movie_shop_backend/app_state.json data/
 ENV STATE_FILE=/app/data/app_state.json
 ENV PYTHONUNBUFFERED=1
-
-# Configurar cache de uv en directorio accesible para appuser
 ENV UV_CACHE_DIR=/app/.uv-cache
 
-# Configurar el puerto y comando
+# Configura el puerto y el comando de inicio
 EXPOSE 8000
-
-# Solución: UV instala 'uvicorn' en un entorno temporal:
 CMD ["uv", "run", "--with", "uvicorn", "uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
