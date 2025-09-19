@@ -72,10 +72,12 @@ stages:
             docker run --rm \
               -v $(System.DefaultWorkingDirectory):/app \
               --workdir /app \
+              --user 0:0 \
               -e PYTHONPATH=/app/movie_shop_backend/src:/app/testing/src \
               -e UVICORN_CACHE_DIR=/tmp/.uv-cache \
               $(acrName)/$(imageName):$(imageTag) \
               uv run pytest testing/src --junitxml=reports/test-results.xml
+              
           displayName: 'Run Pytest in Docker Container'
         - task: PublishTestResults@2
           inputs:
