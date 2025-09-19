@@ -18,34 +18,31 @@ RUN chown -R appuser:appuser /app
 # Ahora, cambia al usuario no-root
 USER appuser
 
-# Copia los archivos del proyecto como 'appuser'
+# Copia los archivos del proyecto
 COPY movie_shop_backend/pyproject.toml .
 COPY movie_shop_backend/uv.lock .
 COPY movie_shop_backend/src ./src
-COPY ./movie_shop_backend/app_state.json ./data/app_state.json
+COPY movie_shop_backend/app_state.json ./data/app_state.json
 COPY testing ./testing
 
-# Crear directorio para datos persistentes (como 'appuser')
+# Crea el directorio de datos
 RUN mkdir -p data
 
-# Instala 'uv' como 'appuser' para que sea accesible para él
+# Instala 'uv' como 'appuser'
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 
-# Agrega la ubicación del binario de 'uv' al PATH de 'appuser'
+# Agrega la ubicación del binario de 'uv' al PATH
 ENV PATH="/home/appuser/.cargo/bin:/home/appuser/.local/bin:${PATH}"
 
-# Usa uv para instalar las dependencias de producción
+# Instala dependencias de producción y de testing
 RUN uv sync --frozen
-
-# Instala las dependencias de testing (como 'appuser')
 RUN pip install -r testing/requirements.txt
 
-# Copia archivos de estado y configura variables de entorno
-COPY movie_shop_backend/app_state.json data/
+# Configura variables de entorno
 ENV STATE_FILE=/app/data/app_state.json
 ENV PYTHONUNBUFFERED=1
 ENV UV_CACHE_DIR=/app/.uv-cache
 
-# Configura el puerto y el comando de inicio
+# Expone el puerto y define el comando de inicio
 EXPOSE 8000
 CMD ["uv", "run", "--with", "uvicorn", "uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
