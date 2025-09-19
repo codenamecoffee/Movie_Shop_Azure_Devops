@@ -49,7 +49,7 @@ ENV PYTHONUNBUFFERED=1
 ENV UV_CACHE_DIR=/app/.uv-cache
 
 # Cambiar a usuario no-root
-ENV UV_CACHE_DIR=/home/appuser/.uv-cache
+
 RUN mkdir -p /app/.uv-cache && chown -R appuser:appuser /app/.uv-cache
 USER appuser
 
