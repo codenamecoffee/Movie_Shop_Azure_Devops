@@ -33,7 +33,8 @@ COPY testing ./testing
 
 # Instalar dependencias de testing
 RUN uv pip install -r testing/requirements.txt
-RUN pip install pytest
+# Instalamos pytest solo para el usuario actual (appuser)
+RUN pip install --user pytest
 
 # Configurar variables de entorno
 ENV STATE_FILE=/app/data/app_state.json
