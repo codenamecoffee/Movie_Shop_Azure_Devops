@@ -73,7 +73,8 @@ stages:
               -v $(System.DefaultWorkingDirectory):/app \
               --workdir /app \
               $(acrName)/$(imageName):$(imageTag) \
-              pytest testing/src --junitxml=reports/test-results.xml          displayName: 'Run Pytest in Docker Container'
+              pytest testing/src --junitxml=reports/test-results.xml          
+          displayName: 'Run Pytest in Docker Container'
         - task: PublishTestResults@2
           inputs:
             testResultsFormat: 'JUnit'
