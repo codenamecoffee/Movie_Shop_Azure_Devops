@@ -13,38 +13,32 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
+# Agregamos los nuevos directorios a la variable de entorno path:
+ENV PATH="/root/.cargo/bin:/root/.local/bin:${PATH}"
+
+# Cambiar a usuario no-root antes de copiar y instalar dependencias
+RUN chown -R appuser:appuser /app
+USER appuser
+
 # Copiamos los archivos
 COPY movie_shop_backend/pyproject.toml .
 COPY movie_shop_backend/uv.lock .
-
-# Agregamos los nuevos directorios a la variable de entorno path: (prevenir errores)
-ENV PATH="/root/.cargo/bin:/root/.local/bin:${PATH}"
-
-# Usar uv para installar dependencias:
-RUN uv sync --frozen
-
-# Crear directorio para datos persistentes:
-RUN mkdir -p data
-
-# Copiamos los datos del proyecto:
 COPY movie_shop_backend/src ./src
 COPY ./movie_shop_backend/app_state.json ./data/app_state.json
 COPY testing ./testing
 
-# Instalamos las dependencias de testing:
+# Crear directorio para datos persistentes:
+RUN mkdir -p data
+
+# Usar uv para instalar dependencias:
+RUN uv sync --frozen
+
+# Instalar las dependencias de testing:
 RUN pip install -r testing/requirements.txt
-
-# Copiar archivo de estado directo
-COPY movie_shop_backend/app_state.json data/
-
 
 # Configurar variables de entorno en el contenedor:
 ENV STATE_FILE=/app/data/app_state.json
 ENV PYTHONUNBUFFERED=1
-
-# Cambiar a usuario no-root (Creado arriba del todo)
-RUN chown -R appuser:appuser /app
-USER appuser
 
 # Configurar cache de uv en directorio accesible para appuser
 ENV UV_CACHE_DIR=/app/.uv-cache
@@ -54,4 +48,3 @@ EXPOSE 8000
 
 # Solución: UV instala 'uvicorn' en un entorno temporal:
 CMD ["uv", "run", "--with", "uvicorn", "uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
-
