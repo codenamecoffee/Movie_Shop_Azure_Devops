@@ -31,10 +31,16 @@ COPY movie_shop_backend/src ./src
 COPY movie_shop_backend/app_state.json ./data/app_state.json
 COPY testing ./testing
 
+# Instalamos pytest solo para el usuario actual (appuser)
+
 # Instalar dependencias de testing
 RUN uv pip install -r testing/requirements.txt
-# Instalamos pytest solo para el usuario actual (appuser)
-RUN pip install pytest
+
+# Instalar pytest en el Python global, accesible para cualquier usuario
+RUN python -m pip install --upgrade pip && python -m pip install pytest
+
+# Asegurar permisos para el appuser
+RUN chown -R appuser:appuser /usr/local/lib/python3.12 /usr/local/bin
 
 
 # Configurar variables de entorno
