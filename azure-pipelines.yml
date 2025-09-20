@@ -73,11 +73,11 @@ stages:
         - script: |
             docker run --rm $(imageName):$(imageTag) pytest
           displayName: 'Run Pytest in Docker Container'
-        - task: PublishTestResults@2
-          inputs:
-            testResultsFormat: 'JUnit'
-            testResultsFiles: '**/reports/test-results.xml'
-            failTaskOnFailedTests: true
+        # - task: PublishTestResults@2  Muestra un informe de 50 mil líneas imposible de asimilar.
+        #   inputs:
+        #     testResultsFormat: 'JUnit'
+        #     testResultsFiles: '**/reports/test-results.xml'
+        #     failTaskOnFailedTests: true
 
 # # --------------------
 # # 4️⃣ Release / Push to ACR
