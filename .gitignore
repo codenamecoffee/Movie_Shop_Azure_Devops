@@ -14,12 +14,6 @@ wheels/
 movie_shop_backend/.venv/
 testing/.venv/
 
-# Environment variables
-.env
-*.env
-!example.env
-!*.example.env
-
 # Caches
 .pytest_cache/
 movie_shop_backend/.pytest_cache/
@@ -39,6 +33,3 @@ htmlcov/
 .idea/
 *.swp
 *.swo
-
-# Runtime state files
-app_state.json

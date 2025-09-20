@@ -1,8 +1,8 @@
-# azure-pipelines.yml
 trigger:
   branches:
     include:
-      - main
+      # - main (se ejecutaría la pipeline haciendo pushes a main)
+      - ci-cd
 
 pool:
   name: "Default"
@@ -20,8 +20,8 @@ variables:
   resourceGroup: SchoolOf       
   containerAppName: school-of-app-env  
   acrName: schoolof.azurecr.io   
-  imageName: mg-fg-movie-shop-debugged-api-ci # Nuestra imagen en ACR (Nueva)
-  imageTag: v1.0.1-ci # Tag de la imagen en ACR (Nueva)
+  imageName: mg-fg-movie-shop-debugged-api-ci
+  imageTag: v1.0.0-ci
 
 stages:
 # --------------------
