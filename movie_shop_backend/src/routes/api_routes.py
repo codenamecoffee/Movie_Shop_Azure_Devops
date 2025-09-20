@@ -13,6 +13,13 @@ _next_shop_id = 1
 router = APIRouter()
 
 
+# # Endpoint para 'Health Probes' en Azure Container Apps
+@router.get("/health", status_code=status.HTTP_200_OK)
+def health_check():
+    return {"status": "ok"}
+
+
+# Fue necesario poner este endpoint (GET /movies/search) arriba del todo para que funcionase:
 
 # Obtener Movie por name, gender y/o director (no por Shop)
 @router.get("/movies/search", response_model=List[Movie], status_code=status.HTTP_200_OK)
