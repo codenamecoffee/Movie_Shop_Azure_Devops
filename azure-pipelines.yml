@@ -59,11 +59,9 @@ stages:
           displayName: 'Save Docker Image as tar.gz'
 
         # Publicar el tar.gz como artefacto (Mejorar eficiencia)
-        - task: PublishBuildArtifacts@1
-          inputs:
-            PathtoPublish: 'image.tar.gz'
-            ArtifactName: 'docker-image'
-            publishLocation: 'Container'
+        - publish: image.tar.gz
+          artifact: docker-image
+          displayName: 'Publish Docker Image Artifact'
 
 # --------------------
 # 3️⃣ Test with Pytest
@@ -119,7 +117,7 @@ stages:
 
         # Continúa utilizando el artefacto que se descargó en Test
         - download: current
-          artifact: drop
+          artifact: docker-image
 
         - script: |
             docker load -i $(Pipeline.Workspace)/docker-image/image.tar.gz
