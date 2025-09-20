@@ -49,9 +49,21 @@ stages:
           inputs:
             command: build
             containerRegistry: $(serviceConnection)
-            repository: $(acrName)/$(imageName)
+            repository: $(imageName)
             Dockerfile: Dockerfile.ci
             tags: $(imageTag)
+
+        # Guardar la imagen como tar.gz (Mejorar eficiencia)
+        - script: |
+            docker save $(imageName):$(imageTag) | gzip > image.tar.gz
+          displayName: 'Save Docker Image as tar.gz'
+
+        # Publicar el tar.gz como artefacto (Mejorar eficiencia)
+        - task: PublishBuildArtifacts@1
+          inputs:
+            PathtoPublish: 'image.tar.gz'
+            ArtifactName: 'docker-image'
+            publishLocation: 'Container'
 
 # --------------------
 # 3️⃣ Test with Pytest
@@ -63,21 +75,35 @@ stages:
     - job: TestJob
       container: runner
       steps:
-        - task: Docker@2
-          displayName: 'Build Docker Image for Test'
+        # Descargar artefacto publicado en Build (Más eficiencia)
+        - task: DownloadBuildArtifacts@0
           inputs:
-            command: build
-            dockerfile: Dockerfile.ci
-            repository: $(imageName)
-            tags: $(imageTag)
+            buildType: 'current'
+            downloadType: 'single'
+            artifactName: 'docker-image'
+            downloadPath: '$(Pipeline.Workspace)'
+
+        # Cargar la imagen desde el tar.gz
         - script: |
-            docker run --rm $(imageName):$(imageTag) pytest
-          displayName: 'Run Pytest in Docker Container'
-        # - task: PublishTestResults@2  Muestra un informe de 50 mil líneas imposible de asimilar.
-        #   inputs:
-        #     testResultsFormat: 'JUnit'
-        #     testResultsFiles: '**/reports/test-results.xml'
-        #     failTaskOnFailedTests: true
+            docker load -i $(Pipeline.Workspace)/docker-image/image.tar.gz
+          displayName: 'Load Docker Image from tar.gz'
+
+        # Levantar API y correr tests
+        - script: |
+            docker run -d --rm -p 8000:8000 --name api_test $(imageName):$(imageTag)
+            for i in {1..30}; do
+              if curl -s http://localhost:8000/health > /dev/null; then
+                echo "API is up!"
+                break
+              fi
+              echo "Waiting for API..."
+              sleep 2
+            done
+            docker exec api_test pytest testing/src -qq --tb=short --disable-warnings --maxfail=1
+            RESULT=$?
+            docker stop api_test
+            exit $RESULT
+          displayName: 'Run API + Tests in Container'
 
 # # --------------------
 # # 4️⃣ Release / Push to ACR
@@ -85,17 +111,22 @@ stages:
 - stage: Release
   displayName: 'Push Image to ACR'
   dependsOn: Test
+  condition: succeeded()
   jobs:
     - job: PushJob
       container: runner
       steps:
-        - task: Docker@2
-          displayName: 'Push Docker Image'
-          inputs:
-            command: push
-            containerRegistry: $(serviceConnection)
-            repository: $(acrName)/$(imageName)
-            tags: $(imageTag)
+
+        # Continúa utilizando el artefacto que se descargó en Test
+        - download: current
+          artifact: drop
+
+        - script: |
+            docker load -i $(Pipeline.Workspace)/docker-image/image.tar.gz
+            docker tag $(imageName):$(imageTag) $(acrName)/$(imageName):$(imageTag)
+            docker push $(acrName)/$(imageName):$(imageTag)
+          displayName: 'Load, Retag & Push Docker Image to ACR'
+
 
 # --------------------
 # 5️⃣ Deploy to Container App
