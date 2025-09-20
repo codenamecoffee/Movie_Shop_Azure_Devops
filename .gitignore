@@ -1,0 +1,44 @@
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Build artifacts
+build/
+dist/
+wheels/
+*.egg-info/
+.eggs/
+
+# Virtual environments
+.venv/
+movie_shop_backend/.venv/
+testing/.venv/
+
+# Environment variables
+.env
+*.env
+!example.env
+!*.example.env
+
+# Caches
+.pytest_cache/
+movie_shop_backend/.pytest_cache/
+testing/.pytest_cache/
+.uv-cache/
+
+# Logs and coverage
+*.log
+*.out
+*.err
+reports/
+.coverage
+htmlcov/
+
+# IDE and editor configs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Runtime state files
+app_state.json

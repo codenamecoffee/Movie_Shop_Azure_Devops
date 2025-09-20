@@ -4,11 +4,6 @@ trigger:
     include:
       - main
 
-pr:
-  branches:
-    include:
-      - main
-
 pool:
   name: "Default"
 
@@ -20,13 +15,13 @@ resources:
       options: --user 0:0
 
 variables:
-  serviceConnectionRm: sc-school-of-2025-mvd # Service Connection de RM
+  serviceConnectionRm: sc-school-of-2025-mvd
   serviceConnection: sc-acr-schoolof
-  resourceGroup: SchoolOf        # Tu Resource Group
-  containerAppName: school-of-app-env   # Nombre de la Container App
-  acrName: schoolof.azurecr.io   # ACR donde subís la imagen
-  imageName: mg-fg-movie-shop-debugged-api-ci # Nuestra imagen en ACR
-  imageTag: v1.0.0-ci # Tag de la imagen en ACR
+  resourceGroup: SchoolOf       
+  containerAppName: school-of-app-env  
+  acrName: schoolof.azurecr.io   
+  imageName: mg-fg-movie-shop-debugged-api-ci # Nuestra imagen en ACR (Nueva)
+  imageTag: v1.0.1-ci # Tag de la imagen en ACR (Nueva)
 
 stages:
 # --------------------
@@ -69,22 +64,13 @@ stages:
       container: runner
       steps:
         - script: |
-            docker run --rm \
-              -v $(System.DefaultWorkingDirectory):/app \
-              --workdir /app \
-              --user 0:0 \
-              -e PYTHONPATH=/app/movie_shop_backend/src:/app/testing/src \
-              -e UVICORN_CACHE_DIR=/tmp/.uv-cache \
-              $(acrName)/$(imageName):$(imageTag) \
-              uv run pytest testing/src --junitxml=reports/test-results.xml
-              
+            docker run --rm $(acrName)/$(imageName):$(imageTag) pytest testing/src --junitxml=reports/test-results.xml
           displayName: 'Run Pytest in Docker Container'
         - task: PublishTestResults@2
           inputs:
             testResultsFormat: 'JUnit'
             testResultsFiles: '**/reports/test-results.xml'
             failTaskOnFailedTests: true
-
 
 # # --------------------
 # # 4️⃣ Release / Push to ACR

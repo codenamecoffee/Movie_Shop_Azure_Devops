@@ -25,20 +25,17 @@ RUN uv sync --frozen
 
 # Copiamos los datos del proyecto:
 COPY movie_shop_backend/src ./src
-COPY ./movie_shop_backend/app_state.json ./data/app_state.json
+COPY movie_shop_backend/app_state.json .
 COPY testing ./testing
 
 # Instalamos las dependencias de testing:
 RUN uv pip install -r testing/requirements.txt
-RUN pip install pytest
-
 
 # Crear directorio para datos persistentes:
 RUN mkdir -p data
 
-# Copiar archivo de estado directo
-COPY movie_shop_backend/app_state.json data/
-
+# Mover archivos de estado al directorio de datos:
+RUN mv app_state.json data/
 
 # Configurar variables de entorno en el contenedor:
 ENV STATE_FILE=/app/data/app_state.json
@@ -48,6 +45,9 @@ ENV PYTHONUNBUFFERED=1
 RUN chown -R appuser:appuser /app
 USER appuser
 
+# Agregar el venv al PATH para que pytest esté disponible
+ENV PATH="/app/.venv/bin:${PATH}"
+
 # Configurar cache de uv en directorio accesible para appuser
 ENV UV_CACHE_DIR=/app/.uv-cache
 
@@ -56,3 +56,4 @@ EXPOSE 8000
 
 # Solución: UV instala 'uvicorn' en un entorno temporal:
 CMD ["uv", "run", "--with", "uvicorn", "uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
+
