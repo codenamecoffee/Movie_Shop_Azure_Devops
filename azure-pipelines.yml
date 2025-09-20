@@ -120,6 +120,7 @@ stages:
           artifact: docker-image
 
         - script: |
+            az acr login --name schoolof
             docker load -i $(Pipeline.Workspace)/docker-image/image.tar.gz
             docker tag $(imageName):$(imageTag) $(acrName)/$(imageName):$(imageTag)
             docker push $(acrName)/$(imageName):$(imageTag)
