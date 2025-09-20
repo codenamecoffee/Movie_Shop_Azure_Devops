@@ -63,6 +63,13 @@ stages:
     - job: TestJob
       container: runner
       steps:
+        - task: Docker@2
+          displayName: 'Build Docker Image for Test'
+          inputs:
+            command: build
+            dockerfile: Dockerfile.ci
+            repository: $(imageName)
+            tags: $(imageTag)
         - script: |
             docker run --rm $(acrName)/$(imageName):$(imageTag) pytest testing/src --junitxml=reports/test-results.xml
           displayName: 'Run Pytest in Docker Container'
