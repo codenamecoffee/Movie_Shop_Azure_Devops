@@ -1,8 +1,8 @@
-trigger:
-  branches:
-    include:
+# trigger:
+#   branches:
+#     include:
       # - main (se ejecutaría la pipeline haciendo pushes a main)
-      - ci-cd
+      # - ci-cd (No es necesario porque se configuró una build validation sobre main)
 
 pool:
   name: "Default"
@@ -71,7 +71,7 @@ stages:
             repository: $(imageName)
             tags: $(imageTag)
         - script: |
-            docker run --rm $(acrName)/$(imageName):$(imageTag) pytest testing/src --junitxml=reports/test-results.xml
+            docker run --rm $(imageName):$(imageTag) pytest testing/src --junitxml=reports/test-results.xml
           displayName: 'Run Pytest in Docker Container'
         - task: PublishTestResults@2
           inputs:
