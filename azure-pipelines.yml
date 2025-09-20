@@ -71,7 +71,7 @@ stages:
             repository: $(imageName)
             tags: $(imageTag)
         - script: |
-            docker run --rm $(imageName):$(imageTag) pytest testing/src --junitxml=reports/test-results.xml
+            docker run --rm $(imageName):$(imageTag) pytest
           displayName: 'Run Pytest in Docker Container'
         - task: PublishTestResults@2
           inputs:
