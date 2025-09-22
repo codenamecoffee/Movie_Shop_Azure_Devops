@@ -53,17 +53,26 @@ stages:
             Dockerfile: Dockerfile.ci
             tags: $(imageTag)
 
+        # Check that image exists
+        - script: docker images
+          displayName: 'List Docker Images before save'
+
         # Guardar la imagen como tar.gz (Mejorar eficiencia)
         - script: |
             docker save $(imageName):$(imageTag) -o image.tar
+            ls -lh image.tar
+            if [ $(stat -c%s image.tar) -lt 100000 ]; then
+              echo "Docker image tar is too small, something went wrong!"
+              exit 1
+            fi
             gzip -f image.tar
             ls -lh image.tar.gz
             rm -f image.tar  # Elimina el tar original si existe
-          displayName: 'Save Docker Image as tar.gz'
+          displayName: 'Check image.tar size before gzip / Fail if image.tar is too small / Save Docker Image as tar.gz'
 
         # Debug: Verifica el tamaño y existencia del archivo
         - script: |
-            s -lh $(Pipeline.Workspace)/docker-image/
+            ls -lh $(Pipeline.Workspace)/docker-image/
             ls -lh $(Pipeline.Workspace)/docker-image/image.tar.gz
           displayName: 'Debug: Check image.tar.gz after creation'
 
