@@ -55,7 +55,8 @@ stages:
 
         # Guardar la imagen como tar.gz (Mejorar eficiencia)
         - script: |
-            docker save $(imageName):$(imageTag) | gzip > image.tar.gz
+            docker save $(imageName):$(imageTag) -o image.tar
+            gzip -f image.tar
           displayName: 'Save Docker Image as tar.gz'
 
         # Publicar el tar.gz como artefacto (Mejorar eficiencia)
@@ -83,7 +84,7 @@ stages:
 
         # Cargar la imagen desde el tar.gz
         - script: |
-            docker load -i $(Pipeline.Workspace)/docker-image/image.tar.gz
+            gunzip -c $(Pipeline.Workspace)/docker-image/image.tar.gz | docker load
           displayName: 'Load Docker Image from tar.gz'
 
         # Levantar API y correr tests
