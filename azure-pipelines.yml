@@ -59,6 +59,12 @@ stages:
             gzip -f image.tar
           displayName: 'Save Docker Image as tar.gz'
 
+        # Debug: Verifica el tamaño y existencia del archivo
+        - script: |
+            ls -lh image.tar.gz
+            file image.tar.gz
+          displayName: 'Debug: Check image.tar.gz after creation'
+
         # Publicar el tar.gz como artefacto (Mejorar eficiencia)
         - publish: image.tar.gz
           artifact: docker-image
@@ -81,6 +87,12 @@ stages:
             downloadType: 'single'
             artifactName: 'docker-image'
             downloadPath: '$(Pipeline.Workspace)'
+
+        # Debug: Verifica el tamaño y existencia del archivo descargado
+        - script: |
+            ls -lh $(Pipeline.Workspace)/docker-image/
+            file $(Pipeline.Workspace)/docker-image/image.tar.gz
+          displayName: 'Debug: Check image.tar.gz after download'  
 
         # Cargar la imagen desde el tar.gz
         - script: |
