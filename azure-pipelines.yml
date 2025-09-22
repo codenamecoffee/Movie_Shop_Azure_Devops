@@ -53,7 +53,7 @@ stages:
             Dockerfile: Dockerfile.ci
             tags: $(imageTag)
 
-        # Check that image exists
+        # Chequeamos que la imagen exista
         - script: docker images
           displayName: 'List Docker Images before save'
 
@@ -86,6 +86,12 @@ stages:
             ls -lh image.tar.gz
           displayName: 'Debug: Check image.tar.gz after publish'
 
+          # Liberar espacio en el agente
+        - script: |
+            docker image prune -f
+            docker rmi $(imageName):$(imageTag) || true
+          displayName: 'Clean up Docker images'
+
 # --------------------
 # 3️⃣ Test with Pytest
 # --------------------
@@ -97,12 +103,18 @@ stages:
       container: runner
       steps:
         # Descargar artefacto publicado en Build (Más eficiencia)
-        - task: DownloadBuildArtifacts@0
-          inputs:
-            buildType: 'current'
-            downloadType: 'single'
-            artifactName: 'docker-image'
-            downloadPath: '$(Pipeline.Workspace)'
+        - download: current
+          artifact: docker-image
+
+        # Debug: List workspace and docker-image contents after download
+        - script: |
+            echo "Workspace root:"
+            ls -lh $(Pipeline.Workspace)
+            echo "docker-image directory:"
+            ls -lh $(Pipeline.Workspace)/docker-image
+            echo "Full tree:"
+            find $(Pipeline.Workspace)
+          displayName: 'Debug: List workspace and docker-image contents after download'
 
         # Debug: Verifica el tamaño y existencia del archivo descargado
         - script: |
