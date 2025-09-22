@@ -68,7 +68,7 @@ stages:
             gzip -f image.tar
             ls -lh image.tar.gz
             rm -f image.tar  # Elimina el tar original si existe
-          displayName: 'Check image.tar size before gzip / Fail if image.tar is too small / Save Docker Image as tar.gz'
+          displayName: 'Save Docker Image as tar.gz and verify size'
 
         # Debug: Verifica el tamaño y existencia del archivo
         - script: |
@@ -80,6 +80,11 @@ stages:
         - publish: image.tar.gz
           artifact: docker-image
           displayName: 'Publish Docker Image Artifact'
+
+          # Debug: Verifica el archivo publicado (solo para build)
+        - script: |
+            ls -lh image.tar.gz
+          displayName: 'Debug: Check image.tar.gz after publish'
 
 # --------------------
 # 3️⃣ Test with Pytest
@@ -101,7 +106,7 @@ stages:
 
         # Debug: Verifica el tamaño y existencia del archivo descargado
         - script: |
-            ls -lh $(Pipeline.Workspace)/docker-image/
+            ls -lh $(Pipeline.Workspace)/docker-image/image.tar.gz
             gunzip -c $(Pipeline.Workspace)/docker-image/image.tar.gz | tar -tvf -
           displayName: 'Debug: Check and list contents of image.tar.gz after download'
 
