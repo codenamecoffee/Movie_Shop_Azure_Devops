@@ -57,12 +57,14 @@ stages:
         - script: |
             docker save $(imageName):$(imageTag) -o image.tar
             gzip -f image.tar
+            ls -lh image.tar.gz
+            rm -f image.tar  # Elimina el tar original si existe
           displayName: 'Save Docker Image as tar.gz'
 
         # Debug: Verifica el tamaño y existencia del archivo
         - script: |
-            ls -lh image.tar.gz
-            file image.tar.gz
+            s -lh $(Pipeline.Workspace)/docker-image/
+            ls -lh $(Pipeline.Workspace)/docker-image/image.tar.gz
           displayName: 'Debug: Check image.tar.gz after creation'
 
         # Publicar el tar.gz como artefacto (Mejorar eficiencia)
@@ -91,8 +93,8 @@ stages:
         # Debug: Verifica el tamaño y existencia del archivo descargado
         - script: |
             ls -lh $(Pipeline.Workspace)/docker-image/
-            file $(Pipeline.Workspace)/docker-image/image.tar.gz
-          displayName: 'Debug: Check image.tar.gz after download'  
+            gunzip -c $(Pipeline.Workspace)/docker-image/image.tar.gz | tar -tvf -
+          displayName: 'Debug: Check and list contents of image.tar.gz after download'
 
         # Cargar la imagen desde el tar.gz
         - script: |
