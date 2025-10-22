@@ -2,11 +2,23 @@ import os
 import requests
 import sys
 import pytest
-from dotenv import load_dotenv
-load_dotenv() 
+from dotenv import load_dotenv, find_dotenv
+
+env_file = find_dotenv()
+if not env_file:
+    if os.path.exists("/app/testing/.env"):
+        env_file = "/app/testing/.env"
+    else:
+        env_file = os.path.join(os.path.dirname(__file__), "../../.env")
+
+
+load_dotenv(env_file, override=True)
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")))
 
 BASE_URL = os.getenv("BASE_URL")
+
+
 
 class TestDeleteShop: 
       

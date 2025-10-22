@@ -1,0 +1,198 @@
+# trigger:
+#   branches:
+#     include:
+      # - main (se ejecutaría la pipeline haciendo pushes a main)
+      # - ci-cd (No es necesario porque se configuró una build validation sobre main)
+
+pool:
+  name: "Default"
+
+resources:
+  containers:
+    - container: runner
+      image: schoolof.azurecr.io/runner:latest
+      endpoint: sc-acr-schoolof
+      options: --user 0:0
+
+variables:
+  serviceConnectionRm: sc-school-of-2025-mvd
+  serviceConnection: sc-acr-schoolof
+  resourceGroup: SchoolOf       
+  containerAppName: fg-mg-movie-shop-api 
+  acrName: schoolof.azurecr.io   
+  imageName: mg-fg-movie-shop-debugged-api-ci
+  imageTag: v1.0.0-ci
+
+stages:
+# --------------------
+# 1️⃣ Checkout
+# --------------------
+- stage: Checkout
+  displayName: 'Checkout code'
+  jobs:
+    - job: CheckoutJob
+      steps:
+        - checkout: self
+
+# --------------------
+# 2️⃣ Build Docker Image
+# --------------------
+- stage: Build
+  displayName: 'Build Docker Image'
+  dependsOn: Checkout
+  jobs:
+    - job: BuildJob
+      container: runner
+      steps:
+        - task: Docker@2
+          displayName: 'Build Docker Image'
+          inputs:
+            command: build
+            containerRegistry: $(serviceConnection)
+            repository: $(imageName)
+            Dockerfile: Dockerfile.ci
+            tags: $(imageTag)
+
+        # Chequeamos que la imagen exista
+        - script: docker images
+          displayName: 'List Docker Images before save'
+
+        # Guardar la imagen como tar.gz (Mejorar eficiencia)
+        - script: |
+            docker save $(imageName):$(imageTag) -o image.tar
+            ls -lh image.tar
+            if [ $(stat -c%s image.tar) -lt 100000 ]; then
+              echo "Docker image tar is too small, something went wrong!"
+              exit 1
+            fi
+            gzip -f image.tar
+            ls -lh image.tar.gz
+            rm -f image.tar  # Elimina el tar original si existe
+          displayName: 'Save Docker Image as tar.gz and verify size'
+
+        # Debug: Verifica el tamaño y existencia del archivo
+        - script: |
+            ls -lh $(Pipeline.Workspace)/docker-image/
+            ls -lh $(Pipeline.Workspace)/docker-image/image.tar.gz
+          displayName: 'Debug: Check image.tar.gz after creation'
+
+        # Publicar el tar.gz como artefacto (Mejorar eficiencia)
+        - publish: image.tar.gz
+          artifact: docker-image
+          displayName: 'Publish Docker Image Artifact'
+
+          # Debug: Verifica el archivo publicado (solo para build)
+        - script: |
+            ls -lh image.tar.gz
+          displayName: 'Debug: Check image.tar.gz after publish'
+
+          # Liberar espacio en el agente
+        - script: |
+            docker image prune -f
+            docker rmi $(imageName):$(imageTag) || true
+          displayName: 'Clean up Docker images'
+
+# --------------------
+# 3️⃣ Test with Pytest
+# --------------------
+- stage: Test
+  displayName: 'Run Tests'
+  dependsOn: Build 
+  jobs:
+    - job: TestJob
+      container: runner
+      steps:
+        # Descargar artefacto publicado en Build (Más eficiencia)
+        - download: current
+          artifact: docker-image
+
+        # Debug: List workspace and docker-image contents after download
+        - script: |
+            echo "Workspace root:"
+            ls -lh $(Pipeline.Workspace)
+            echo "docker-image directory:"
+            ls -lh $(Pipeline.Workspace)/docker-image
+            echo "Full tree:"
+            find $(Pipeline.Workspace)
+          displayName: 'Debug: List workspace and docker-image contents after download'
+
+        # Debug: Verifica el tamaño y existencia del archivo descargado
+        - script: |
+            ls -lh $(Pipeline.Workspace)/docker-image/image.tar.gz
+            gunzip -c $(Pipeline.Workspace)/docker-image/image.tar.gz | tar -tvf -
+          displayName: 'Debug: Check and list contents of image.tar.gz after download'
+
+        # Cargar la imagen desde el tar.gz
+        - script: |
+            gunzip -c $(Pipeline.Workspace)/docker-image/image.tar.gz | docker load
+          displayName: 'Load Docker Image from tar.gz'
+
+        # Levantar API y correr tests
+        - script: |
+            docker run -d --rm -p 8000:8000 --name api_test $(imageName):$(imageTag)
+            for i in {1..30}; do
+              if curl -s http://localhost:8000/health > /dev/null; then
+                echo "API is up!"
+                break
+              fi
+              echo "Waiting for API..."
+              sleep 2
+            done
+            docker exec api_test pytest testing/src -qq --tb=short --disable-warnings --maxfail=1
+            RESULT=$?
+            docker stop api_test
+            exit $RESULT
+          displayName: 'Run API + Tests in Container'
+
+# # --------------------
+# # 4️⃣ Release / Push to ACR
+# # --------------------
+- stage: Release
+  displayName: 'Push Image to ACR'
+  dependsOn: Test
+  condition: succeeded()
+  jobs:
+    - job: PushJob
+      container: runner
+      steps:
+
+        # Continúa utilizando el artefacto que se descargó en Test
+        - download: current
+          artifact: docker-image
+
+        # Login to ACR
+        - task: Docker@2
+          displayName: 'Login to ACR'
+          inputs:
+            command: login
+            containerRegistry: $(serviceConnection)
+
+        - script: |
+            docker load -i $(Pipeline.Workspace)/docker-image/image.tar.gz
+            docker tag $(imageName):$(imageTag) $(acrName)/$(imageName):$(imageTag)
+            docker push $(acrName)/$(imageName):$(imageTag)
+          displayName: 'Load, Retag & Push Docker Image to ACR'
+
+
+# --------------------
+# 5️⃣ Deploy to Container App
+# --------------------
+- stage: Deploy
+  displayName: 'Deploy to Container App'
+  dependsOn: Release  
+  condition: succeeded()
+  jobs:
+    - job: DeployJob
+      container: runner
+      steps:
+        - task: AzureCLI@2
+          displayName: 'Deploy Container App'
+          inputs:
+            azureSubscription: $(serviceConnectionRm)
+            scriptType: bash
+            scriptLocation: inlineScript
+            inlineScript: |
+              az containerapp update \
+                --name $(containerAppName) \
+                --resource-group $(resourceGroup) \
+                --image $(acrName)/$(imageName):$(imageTag)
