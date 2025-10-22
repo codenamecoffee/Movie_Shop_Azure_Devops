@@ -1,0 +1,39 @@
+# Git files
+.git
+.gitignore
+
+# Documentation  
+README.md
+*.md
+
+# IDE files
+.vscode/
+.idea/
+
+# Python cache
+__pycache__/
+*.py[oc]
+*.egg-info/
+
+# Virtual environments
+.venv
+venv/
+
+# Environment files (secrets)
+.env
+*.env
+
+# Testing (si estuvieras en rama testing)
+.pytest_cache/
+.coverage
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+
+# Docker files (no necesarios dentro del contenedor)
+Dockerfile
+.dockerignore
