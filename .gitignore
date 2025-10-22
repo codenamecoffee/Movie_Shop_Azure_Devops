@@ -14,6 +14,9 @@ wheels/
 movie_shop_backend/.venv/
 testing/.venv/
 
+# Docker generated data
+movie_shop_data/
+
 # Caches
 .pytest_cache/
 movie_shop_backend/.pytest_cache/

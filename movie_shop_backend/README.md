@@ -96,15 +96,3 @@ uv run fastapi dev .\src\main.py
 ```
 
 Una vez inicializado el servicio se puede utilizar el mismo a través de la siguiente url en el navegador: [http://127.0.0.1:8000/](http://127.0.0.1:8000/) o ingresar a la documentación de Swagger del mismo mediante [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs).
-
-
-## DevOps / Docker Setup
-
-- Se agregó un Dockerfile para facilitar el despliegue de la API en contenedores.
-- La carpeta `movie_shop_data` se usa como volumen para persistencia de datos.
-- Para ejecutar la API en Docker y mantener los datos persistentes, sigue estos pasos:
-  1. `docker build -t <image-name> .`
-  2. `docker run -d -p 8000:8000 -v $(pwd)/movie_shop_data:/app/data --name <container-name> <image-name>`
-
-- Sino funciona (2.) entonces conviene probar con el comando:
-3. `docker run -d --name "<container-name>" -p 8000:8000 -v "$(pwd)/movie_shop_data:/app/movie_shop_data" "<image-name>"`
