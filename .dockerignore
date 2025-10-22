@@ -6,12 +6,20 @@
 azure-pipelines.yml
 Dockerfile
 Dockerfile.*
+.dockerignore
+
+# Documentation
+README.md
+*.md
+movie_shop_backend/explicaciones.md
+testing/HandsOn.md
 
 # Python cache
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
+*.py[oc]
 *.egg-info/
 .eggs/
 
@@ -25,6 +33,15 @@ testing/.venv/
 movie_shop_backend/.pytest_cache/
 testing/.pytest_cache/
 .uv-cache/
+
+# Testing and cache
+.pytest_cache/
+movie_shop_backend/.pytest_cache/
+testing/.pytest_cache/
+.uv-cache/
+.coverage
+htmlcov/
+reports/
 
 # Logs y reports
 *.log
