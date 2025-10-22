@@ -105,3 +105,6 @@ Una vez inicializado el servicio se puede utilizar el mismo a través de la sigu
 - Para ejecutar la API en Docker y mantener los datos persistentes, sigue estos pasos:
   1. `docker build -t <image-name> .`
   2. `docker run -d -p 8000:8000 -v $(pwd)/movie_shop_data:/app/data --name <container-name> <image-name>`
+
+- Sino funciona (2.) entonces conviene probar con el comando:
+3. `docker run -d --name "<container-name>" -p 8000:8000 -v "$(pwd)/movie_shop_data:/app/movie_shop_data" "<image-name>"`

@@ -34,9 +34,6 @@ RUN uv pip install -r testing/requirements.txt
 # Crear directorio para datos persistentes:
 RUN mkdir -p data
 
-# Mover archivos de estado al directorio de datos:
-RUN mv app_state.json data/
-
 # Configurar variables de entorno en el contenedor:
 ENV STATE_FILE=/app/data/app_state.json
 ENV PYTHONUNBUFFERED=1
