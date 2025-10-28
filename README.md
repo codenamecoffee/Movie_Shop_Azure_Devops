@@ -280,6 +280,6 @@ This project is part of a multi-repository solution:
 
 1. **Movie Shop API** (this repository) - Main application and CI/CD
 2. [**Terraform Module - GitHub**](https://github.com/codenamecoffee/Azure_Container_Apps_Terraform_Module) - Reusable Azure Container Apps module
-3. [**Infrastructure Repository - GitHub**](https://github.com/codenamecoffee/Azure_Container_Apps_Terraform_Infrastructure)
+3. [**Infrastructure Repository - GitHub**](https://github.com/codenamecoffee/Azure_Container_Apps_Terraform_Infrastructure) - Complete Azure infrastructure management
 
 > **Note:** The Terraform repositories contain Azure-specific configurations and are primarily for educational demonstration of Infrastructure as Code practices.
