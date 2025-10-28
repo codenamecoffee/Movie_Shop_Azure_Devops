@@ -265,7 +265,12 @@ This project demonstrates proficiency in:
 
 ## 📄 License
 
-This project is for educational purposes as part of the **School of Software Engineering** program. For more information, see `testing/LICENSE.txt`.
+This project is released under the [MIT License](LICENSE) for all code and content in this repository, unless otherwise noted.
+
+> **Note:** The `testing/` folder contains its own license file (`testing/LICENSE.txt`) provided by the training program.  
+> Please refer to that file for specific terms regarding the testing framework and related materials.
+
+This project was developed as part of the **School of Software Engineering** program for educational purposes.
 
 <br>
 
@@ -274,12 +279,7 @@ This project is for educational purposes as part of the **School of Software Eng
 This project is part of a multi-repository solution:
 
 1. **Movie Shop API** (this repository) - Main application and CI/CD
-2. **Terraform Module** - Reusable Azure Container App module *(Coming soon)*
-3. **Infrastructure Repository** - Complete Azure infrastructure management *(Coming soon)*
+2. [**Terraform Module - GitHub**](https://github.com/codenamecoffee/Azure_Container_Apps_Terraform_Module) - Reusable Azure Container Apps module
+3. [**Infrastructure Repository - GitHub**](https://github.com/codenamecoffee/Azure_Container_Apps_Terraform_Infrastructure)
 
 > **Note:** The Terraform repositories contain Azure-specific configurations and are primarily for educational demonstration of Infrastructure as Code practices.
-
-<!-- TODO: Add repository links when published:
-- Terraform Module: [Add URL here]
-- Infrastructure Repo: [Add URL here]
--->
